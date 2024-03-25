@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Daily Quote</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 50px;
+    }
+    h1 {
+      font-size: 3em;
+    }
+    #quote {
+      font-size: 1.5em;
+      line-height: 1.5;
+    }
+    /* Allow user to resize font using browser zoom */
+  </style>
+</head>
+<body>
+  <h1>Random Daily Quote</h1>
+  <p id="quote"></p>
+  <script>
+    // Function to fetch the quotes from the URL and display a random quote
+    async function getAndDisplayQuote() {
+      try {
+        const response = await fetch("https://raw.githubusercontent.com/hipnologo/daily_quote/main/quotes.txt");
+        if (!response.ok) {
+          throw new Error("Failed to fetch quotes");
+        }
+        const quotesText = await response.text();
+        const quotes = quotesText.trim().split("\n");  // Trim extra whitespace and split
+
+        // Check if there are any quotes after removing the empty line
+        if (quotes.length === 0) {
+          throw new Error("No quotes found");
+        }
+
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        document.getElementById("quote").textContent = randomQuote;
+      } catch (error) {
+        console.error("Error:", error.message);
+        // Handle the error: display an error message or refresh the page
+        document.getElementById("quote").textContent = "Error: Failed to retrieve quotes.";
+        // You can also uncomment the following line to refresh on error
+        // location.reload();
+      }
+    }
+
+    // Call the function to get and display the quote on page load
+    getAndDisplayQuote();
+
+    // Function to refresh the page every 15 minutes
+    function refreshPage() {
+      setTimeout(function() {
+        location.reload();
+      }, 15 * 60 * 1000); // 15 minutes in milliseconds
+    }
+
+    // Call the refresh function on page load
+    refreshPage();
+  </script>
+</body>
+</html>
