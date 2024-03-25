@@ -16,21 +16,23 @@ cd "$PROJECT_DIR"
 if [ ! -d "$VENV_PATH" ]; then
     echo "Virtual environment not found. Creating one..."
     $PYTHON_PATH -m venv "$VENV_PATH"
+    # Activate the virtual environment
+    source "$VENV_PATH/bin/activate"
+    echo "Installing dependencies from requirements.txt..."
+    pip install -r requirements.txt
+else
+    # Activate the virtual environment
+    source "$VENV_PATH/bin/activate"
 fi
-
-# Activate the virtual environment
-source "$VENV_PATH/bin/activate"
-
-# Ensure dependencies are installed
-pip install -r requirements.txt
 
 # Run the Python script
 echo "Running the daily_quote.py script..."
 python daily_quote.py
 
-# Check for git changes
-if ! git diff --quiet; then
-    echo "Changes detected. Updating the repository..."
+sleep 1 # Wait for the file to be written
+
+if git status --porcelain | grep --quiet "quotes.txt"; then
+    echo "Changes detected in quotes.txt. Updating the repository..."
 
     # Add the updated quotes.txt to the staging area
     git add quotes.txt
@@ -44,5 +46,5 @@ if ! git diff --quiet; then
 
     echo "Repository updated successfully."
 else
-    echo "No changes detected. No update needed."
+    echo "No changes detected in quotes.txt. No update needed."
 fi

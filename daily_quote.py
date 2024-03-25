@@ -2,42 +2,48 @@
 import os
 import git
 import requests
+import logging
 from datetime import datetime
 
 # Dynamically construct the local repository path
-home_path = os.path.expanduser('~')  # Expands to your user's home directory
-local_repo_path = os.path.join(home_path, 'projects/GitHub/daily_quote')
+local_repo_path = os.path.join(os.path.expanduser('~'), 'projects/GitHub/daily_quote')
+
+# Setup logging
+logging.basicConfig(filename=os.path.join(local_repo_path, 'daily_quote.log'), level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
 
 def generate_quote():
-    # Fetch a random quote from the quotable API
-    response = requests.get("https://api.quotable.io/random")
-    if response.status_code == 200:  # Check if the request was successful
+    try:
+        response = requests.get("https://api.quotable.io/random")
+        response.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xx
         data = response.json()
         return f"{data['content']} — {data['author']}"
-    else:
-        return "No quote available today."
+    except requests.RequestException as e:
+        logging.error(f"Error fetching quote: {e}")
+        return None
 
 def daily_commit():
     quote = generate_quote()
+    if quote is None:
+        logging.info("No new quote fetched, skipping commit.")
+        return
 
-    # Get the current date and time for the commit message
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    # Append the quote to a file
-    with open(os.path.join(local_repo_path, 'quotes.txt'), 'a') as file:
+    quote_file = os.path.join(local_repo_path, 'quotes.txt')
+    with open(quote_file, 'a') as file:
         file.write(f"{quote}\n")
-    
-    # Git operations using the dynamically constructed path
-    repo = git.Repo(local_repo_path)
-    repo.git.add('quotes.txt')  # Specify the file you want to add
-    repo.index.commit(f"Daily inspirational quote update - {now}")
-    repo.git.push()
 
-# To schedule within the script, keep the loop below:
-# schedule.every().day.at("10:00").do(daily_commit)
-# while True:
-#     schedule.run_pending()
-#     time.sleep(60)  # Wait a minute
+    try:
+        repo = git.Repo(local_repo_path)
+        if repo.is_dirty(untracked_files=True):  # Check if there are changes
+            repo.git.pull('origin', 'main')  # Pull latest changes to avoid conflicts
+            repo.git.add(quote_file)
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            repo.index.commit(f"Daily inspirational quote update - {now}")
+            repo.git.push('origin', 'main')
+            logging.info("Successfully committed and pushed new quote.")
+        else:
+            logging.info("No changes to commit.")
+    except git.exc.GitError as e:
+        logging.error(f"Git operation failed: {e}")
 
-# To schedule using cron, use the following command:
+# Execute the daily commit function
 daily_commit()
