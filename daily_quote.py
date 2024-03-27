@@ -3,6 +3,7 @@ import os
 import git
 import requests
 import logging
+import argparse
 from datetime import datetime
 
 # Dynamically construct the local repository path
@@ -11,18 +12,38 @@ local_repo_path = os.path.join(os.path.expanduser('~'), 'projects/GitHub/daily_q
 # Setup logging
 logging.basicConfig(filename=os.path.join(local_repo_path, 'daily_quote.log'), level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
 
-def generate_quote():
-    try:
-        response = requests.get("https://api.quotable.io/random")
-        response.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xx
-        data = response.json()
-        return f"{data['content']} — {data['author']}"
-    except requests.RequestException as e:
-        logging.error(f"Error fetching quote: {e}")
-        return None
+def generate_quote(category=None):
+    if category:
+        # Use the new API endpoint with the specified category
+        api_url = 'https://api.api-ninjas.com/v1/quotes?category={}'.format(category)
+        api_key = os.getenv('API_NINJAS_KEY')
+        headers = {'X-Api-Key': api_key}
+        try:
+            response = requests.get(api_url, headers=headers, verify=False)
+            response.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xx
+            data = response.json()
+            # Assuming the API returns a list of quotes, pick the first one
+            if data:
+                quote_data = data[0]
+                return f"{quote_data['quote']} — {quote_data['author']}"
+            else:
+                return None
+        except requests.RequestException as e:
+            logging.error(f"Error fetching quote from category '{category}': {e}")
+            return None
+    else:
+        # Use the current API endpoint
+        try:
+            response = requests.get("https://api.quotable.io/random", verify=False)
+            response.raise_for_status()
+            data = response.json()
+            return f"{data['content']} — {data['author']}"
+        except requests.RequestException as e:
+            logging.error(f"Error fetching quote: {e}")
+            return None
 
-def daily_commit():
-    quote = generate_quote()
+def daily_commit(category=None):
+    quote = generate_quote(category)
     if quote is None:
         logging.info("No new quote fetched, skipping commit.")
         return
@@ -33,8 +54,8 @@ def daily_commit():
 
     try:
         repo = git.Repo(local_repo_path)
-        if repo.is_dirty(untracked_files=True):  # Check if there are changes
-            repo.git.pull('origin', 'main')  # Pull latest changes to avoid conflicts
+        if repo.is_dirty(untracked_files=True):
+            repo.git.pull('origin', 'main')
             repo.git.add(quote_file)
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             repo.index.commit(f"Daily inspirational quote update - {now}")
@@ -45,5 +66,10 @@ def daily_commit():
     except git.exc.GitError as e:
         logging.error(f"Git operation failed: {e}")
 
-# Execute the daily commit function
-daily_commit()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Fetch and commit a daily inspirational quote. Optionally specify a category.")
+    parser.add_argument('--category', type=str, help='Specify the category of the quote')
+    args = parser.parse_args()
+
+    # Execute the daily commit function with the category if provided
+    daily_commit(category=args.category)
