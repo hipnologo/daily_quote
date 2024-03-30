@@ -457,3 +457,4 @@ If you're trying to create a company, it's like baking a cake. You have to have 
 Don't be afraid to go out on a limb. That's where the fruit is. — H. Jackson Brown Jr.
 Trust is the lubrication that makes it possible for organizations to work. — Warren Bennis
 An ounce of emotion is equal to a ton of facts. — John Junor
+Programs must be written for people to read, and only incidentally for machines to execute. — Hal Abelson
