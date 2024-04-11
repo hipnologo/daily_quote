@@ -851,3 +851,4 @@ Never deny a diagnosis but do deny the negative verdict that may go with it. —
 Keep silence for the most part, and speak only when you must, and then briefly. — Epictetus
 No one can make you feel inferior without your consent. — Eleanor Roosevelt
 Everyone thinks of changing the world, but no one thinks of changing himself. — Leo Tolstoy
+Independence is happiness. — Susan B. Anthony
