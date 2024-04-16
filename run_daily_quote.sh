@@ -14,11 +14,11 @@ cd "$PROJECT_DIR"
 
 # Check if the virtual environment exists; if not, create it and install dependencies
 if [ ! -d "$VENV_PATH" ]; then
-    echo "Virtual environment not found. Creating one..."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') – Virtual environment not found. Creating one..."
     $PYTHON_PATH -m venv "$VENV_PATH"
     # Activate the virtual environment
     source "$VENV_PATH/bin/activate"
-    echo "Installing dependencies from requirements.txt..."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') – Installing dependencies from requirements.txt..."
     pip install -r requirements.txt
 else
     # Activate the virtual environment
@@ -26,13 +26,13 @@ else
 fi
 
 # Run the Python script
-echo "Running the daily_quote.py script..."
+echo "$(date '+%Y-%m-%d %H:%M:%S') – Running the daily_quote.py script..."
 python daily_quote.py
 
 sleep 1 # Wait for the file to be written
 
 if git status --porcelain | grep --quiet "quotes.txt"; then
-    echo "Changes detected in quotes.txt. Updating the repository..."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') – Changes detected in quotes.txt. Updating the repository..."
 
     # Add the updated quotes.txt to the staging area
     git add quotes.txt
@@ -44,7 +44,7 @@ if git status --porcelain | grep --quiet "quotes.txt"; then
     # Push the changes to the main branch
     git push origin main
 
-    echo "Repository updated successfully."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') – Repository updated successfully."
 else
-    echo "No changes detected in quotes.txt. No update needed."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') – No changes detected in quotes.txt. No update needed."
 fi

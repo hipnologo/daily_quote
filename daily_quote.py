@@ -34,7 +34,7 @@ def generate_quote(category=None):
     else:
         # Use the current API endpoint
         try:
-            response = requests.get("https://api.quotable.io/random", verify=False)
+            response = requests.get("https://api.quotable.io/random", verify=True)
             response.raise_for_status()
             data = response.json()
             return f"{data['content']} — {data['author']}"
