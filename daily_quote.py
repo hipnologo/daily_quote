@@ -13,6 +13,19 @@ local_repo_path = os.path.join(os.path.expanduser('~'), 'projects/GitHub/daily_q
 logging.basicConfig(filename=os.path.join(local_repo_path, 'daily_quote.log'), level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
 
 def generate_quote(category=None):
+    """
+    Generate a random quote from the specified category or from any category if not specified.
+
+    Args:
+        category (str, optional): The category of the quote. Defaults to None.
+
+    Returns:
+        str: A randomly generated quote in the format "<quote> — <author>".
+             Returns None if there was an error fetching the quote.
+
+    Raises:
+        requests.RequestException: If there was an error making the HTTP request.
+    """
     if category:
         # Use the new API endpoint with the specified category
         api_url = 'https://api.api-ninjas.com/v1/quotes?category={}'.format(category)
@@ -43,6 +56,15 @@ def generate_quote(category=None):
             return None
 
 def daily_commit(category=None):
+    """
+    Commits a new daily inspirational quote to a Git repository.
+
+    Args:
+        category (str, optional): The category of the quote. Defaults to None.
+
+    Returns:
+        None
+    """
     quote = generate_quote(category)
     if quote is None:
         logging.info("No new quote fetched, skipping commit.")
