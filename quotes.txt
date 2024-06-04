@@ -4027,3 +4027,4 @@ You're not obligated to win. You're obligated to keep trying to do the best you 
 We can only learn to love by loving. — Iris Murdoch
 Nothing could be worse than the fear that one had given up too soon and left one unexpended effort that might have saved the world. — Jane Addams
 With every experience, you alone are painting your own canvas, thought by thought, choice by choice. — Oprah Winfrey
+Programs must be written for people to read, and only incidentally for machines to execute. — Hal Abelson
