@@ -4030,3 +4030,4 @@ With every experience, you alone are painting your own canvas, thought by though
 Programs must be written for people to read, and only incidentally for machines to execute. — Hal Abelson
 Every man takes the limits of his own field of vision for the limits of the world. — Arthur Schopenhauer
 If you can't explain it simply, you don't understand it well enough. — Albert Einstein
+One's life has value so long as one attributes value to the life of others, by means of love, friendship, indignation and compassion. — Simone de Beauvoir
