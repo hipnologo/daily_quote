@@ -4561,3 +4561,4 @@ I'd rather regret the things that I have done than the things that I have not do
 Obstacles are those frightful things you see when you take your eyes off your goal. — Henry Ford
 Just because something doesn't do what you planned it to do doesn't mean it's useless. — Thomas Edison
 Technology is anything that wasn't around when you were born. — Man Ray
+Programs must be written for people to read, and only incidentally for machines to execute. — Hal Abelson
