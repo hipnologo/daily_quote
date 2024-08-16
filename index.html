@@ -16,6 +16,7 @@
         .quote-container {
             background-color: white;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            position: relative;
         }
         .quote-mark {
             font-family: 'Playfair Display', serif;
@@ -43,7 +44,24 @@
         }
         .share-button:hover {
             color: #2d3748; /* Darker grey on hover */
-        }        
+        }
+        .flag-button img {
+            filter: grayscale(100%);
+            transition: filter 0.3s ease;
+            width: 30px; /* Uniform flag size */
+            height: 30px;
+        }
+        .flag-button img:hover {
+            filter: none; /* Show color on hover */
+        }
+        .flag-container {
+            position: absolute;
+            bottom: 5px; /* Adjust this value based on the required positioning */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center px-4">
@@ -82,13 +100,24 @@
                 </button>
             </div>
         </div>
+        <div class="flag-container">
+            <button class="flag-button" onclick="loadQuotes('quotes.txt')" title="English">
+                <img src="https://flagicons.lipis.dev/flags/4x3/us.svg" alt="English">
+            </button>
+            <button class="flag-button" onclick="loadQuotes('quotes_es.txt')" title="Spanish">
+                <img src="https://flagicons.lipis.dev/flags/4x3/es.svg" alt="Spanish">
+            </button>
+            <button class="flag-button" onclick="loadQuotes('quotes_pt.txt')" title="Portuguese">
+                <img src="https://flagicons.lipis.dev/flags/4x3/br.svg" alt="Portuguese">
+            </button>
+        </div>
     </div>
     <canvas id="quoteImage" width="1080" height="1080"></canvas>
 
     <script>
-        async function getAndDisplayQuote() {
+        async function loadQuotes(file) {
             try {
-                const response = await fetch("https://raw.githubusercontent.com/hipnologo/daily_quote/main/quotes.txt");
+                const response = await fetch(`https://raw.githubusercontent.com/hipnologo/daily_quote/main/${file}`);
                 if (!response.ok) {
                     throw new Error("Failed to fetch quotes");
                 }
@@ -170,7 +199,8 @@
             alert("Image downloaded! You can now share it on Instagram.");
         }
 
-        getAndDisplayQuote();
+        // Load the default quotes (English) when the page first loads
+        loadQuotes('quotes.txt');
         refreshPage();
         document.getElementById("playButton").addEventListener("click", readQuote);
     </script>
