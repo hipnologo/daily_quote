@@ -1,81 +1,90 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Daily Quote</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 50px;
-    }
-    h1 {
-      font-size: 3em;
-    }
-    #quote {
-      font-size: 1.5em;
-      line-height: 1.5;
-    }
-    .play-button {
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-      opacity: 0.5; /* Partially hidden initially */
-      transition: opacity 0.5s ease; /* Smooth transition for the hover effect */
-    }
-    .play-button:hover {
-      opacity: 1; /* Fully visible on hover */
-    }
-    svg {
-      fill: #000; /* SVG icon color */
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Quote</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400&display=swap');
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .quote-container {
+            background-color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .quote-mark {
+            font-family: 'Playfair Display', serif;
+            font-size: 8rem;
+            line-height: 1;
+            color: #4a5568;
+            opacity: 0.2;
+        }
+        #quote {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            line-height: 1.6;
+        }
+        .play-button {
+            transition: all 0.3s ease;
+        }
+        .play-button:hover {
+            transform: scale(1.1);
+        }
+    </style>
 </head>
-<body>
-  <h1>Random Daily Quote</h1>
-  <p id="quote"></p>
-  <!-- SVG for play icon inside a div with the play-button class for styling -->
-  <div id="playButton" class="play-button" title="Read Quote">
-    <svg viewBox="0 0 60 60">
-      <polygon points="15,0 60,30 15,60"></polygon>
-    </svg>
-  </div>
-  <script>
-    async function getAndDisplayQuote() {
-      try {
-        const response = await fetch("https://raw.githubusercontent.com/hipnologo/daily_quote/main/quotes.txt");
-        if (!response.ok) {
-          throw new Error("Failed to fetch quotes");
+<body class="min-h-screen flex items-center justify-center px-4">
+    <div class="quote-container max-w-4xl w-full p-8 md:p-12 rounded-lg relative overflow-hidden">
+        <h1 class="text-3xl md:text-4xl font-bold mb-6 text-gray-800">Daily Quote</h1>
+        <div class="relative">
+            <span class="quote-mark absolute top-0 left-0 transform -translate-y-1/2 -translate-x-1/4">"</span>
+            <p id="quote" class="text-gray-700 z-10 relative"></p>
+        </div>
+        <div id="playButton" class="play-button mt-8 inline-block cursor-pointer" title="Read Quote">
+            <svg class="w-12 h-12 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        async function getAndDisplayQuote() {
+            try {
+                const response = await fetch("https://raw.githubusercontent.com/hipnologo/daily_quote/main/quotes.txt");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch quotes");
+                }
+                const quotesText = await response.text();
+                const quotes = quotesText.trim().split("\n");
+                if (quotes.length === 0) {
+                    throw new Error("No quotes found");
+                }
+                const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                document.getElementById("quote").textContent = randomQuote;
+            } catch (error) {
+                console.error("Error:", error.message);
+                document.getElementById("quote").textContent = "Error: Failed to retrieve quotes.";
+            }
         }
-        const quotesText = await response.text();
-        const quotes = quotesText.trim().split("\n");
 
-        if (quotes.length === 0) {
-          throw new Error("No quotes found");
+        function refreshPage() {
+            setTimeout(function() {
+                location.reload();
+            }, 15 * 60 * 1000);
         }
 
-        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-        document.getElementById("quote").textContent = randomQuote;
-      } catch (error) {
-        console.error("Error:", error.message);
-        document.getElementById("quote").textContent = "Error: Failed to retrieve quotes.";
-      }
-    }
+        function readQuote() {
+            const quote = document.getElementById("quote").textContent;
+            const utterance = new SpeechSynthesisUtterance(quote);
+            window.speechSynthesis.speak(utterance);
+        }
 
-    getAndDisplayQuote();
-    refreshPage();
-
-    function refreshPage() {
-      setTimeout(function() {
-        location.reload();
-      }, 15 * 60 * 1000);
-    }
-
-    function readQuote() {
-      const quote = document.getElementById("quote").textContent;
-      const utterance = new SpeechSynthesisUtterance(quote);
-      window.speechSynthesis.speak(utterance);
-    }
-
-    document.getElementById("playButton").addEventListener("click", readQuote);
-  </script>
+        getAndDisplayQuote();
+        refreshPage();
+        document.getElementById("playButton").addEventListener("click", readQuote);
+    </script>
 </body>
 </html>
