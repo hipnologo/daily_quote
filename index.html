@@ -193,6 +193,12 @@
             }
         }
 
+        function refreshPage() {
+            setTimeout(function() {
+                location.reload();
+            }, 5 * 60 * 1000); // Refresh the page every 5 minutes
+        }
+
         function displayQuote() {
             const quoteElement = document.getElementById("quote");
             quoteElement.style.opacity = "0";
@@ -288,6 +294,8 @@
                 .then((reg) => console.log('Service worker registered', reg))
                 .catch((err) => console.log('Service worker not registered', err));
         }
+
+        refreshPage();
     </script>
 </body>
 </html>
