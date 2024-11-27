@@ -140,3 +140,4 @@ cython_debug/
 *.logs
 
 .DS_Store
+daily_quote.log

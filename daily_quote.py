@@ -7,7 +7,8 @@ import argparse
 from datetime import datetime
 
 # Dynamically construct the local repository path
-local_repo_path = os.path.join(os.path.expanduser('~'), 'projects/GitHub/daily_quote')
+#local_repo_path = os.path.join(os.path.expanduser('~'), 'projects/GitHub/daily_quote')
+local_repo_path = os.path.dirname(os.path.abspath(__file__))
 
 # Setup logging
 logging.basicConfig(filename=os.path.join(local_repo_path, 'daily_quote.log'), level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
