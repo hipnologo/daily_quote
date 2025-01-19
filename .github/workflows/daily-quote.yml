@@ -8,6 +8,8 @@ on:
 jobs:
   update-quotes:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write    # Needed for pushing to the repository
     
     steps:
     - name: Checkout repository
@@ -37,3 +39,15 @@ jobs:
       env:
         API_NINJAS_KEY: ${{ secrets.API_NINJAS_KEY }}
       run: python daily_quote.py
+
+    - name: Check and commit changes
+      run: |
+        if [[ -n "$(git status --porcelain)" ]]; then
+          echo "Changes detected. Committing updates..."
+          git add quotes.txt quotes_es.txt quotes_pt.txt
+          git commit -m "Daily inspirational quote update - $(date '+%Y-%m-%d %H:%M:%S')"
+          git push
+          echo "Repository updated successfully."
+        else
+          echo "No changes detected. Skipping commit."
+        fi
