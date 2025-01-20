@@ -36,7 +36,7 @@ def generate_quote(category=None):
 
     # **DEBUGGING STEP**: Temporarily log the full API key
     # **Caution**: Ensure this is removed or masked after debugging to protect sensitive information
-    logging.debug(f"Full API Key: '{api_key}'")  # Remove or comment out after verifying
+    # logging.debug(f"Full API Key: '{api_key}'")  # Remove or comment out after verifying
 
     # Log masked version of API key for debugging
     masked_key = f"{api_key[:4]}{'*' * (len(api_key) - 4)}"
