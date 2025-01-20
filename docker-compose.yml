@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  daily-quote:
+    build: .
+    volumes:
+      - .:/app
+      - git-credentials:/root/.git-credentials
+    environment:
+      - API_NINJAS_KEY=${API_NINJAS_KEY}
+      - GIT_CREDENTIALS=${GIT_CREDENTIALS}
+    restart: unless-stopped
+    command: ["python", "daily_quote.py"]
+
+volumes:
+  git-credentials:

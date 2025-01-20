@@ -16,42 +16,92 @@ logging.basicConfig(filename=os.path.join(local_repo_path, 'daily_quote.log'), l
 def generate_quote(category=None):
     """
     Generate a random quote from the specified category or from any category if not specified.
-
-    Args:
-        category (str, optional): The category of the quote. Defaults to None.
-
-    Returns:
-        str: A randomly generated quote in the format "<quote> — <author>".
-             Returns None if there was an error fetching the quote.
-
-    Raises:
-        requests.RequestException: If there was an error making the HTTP request.
     """
-    if category:
-        api_url = 'https://api.api-ninjas.com/v1/quotes?category={}'.format(category)
-        api_key = os.getenv('API_NINJAS_KEY')
-        headers = {'X-Api-Key': api_key}
-        try:
-            response = requests.get(api_url, headers=headers, verify=False)
-            response.raise_for_status()
+    # Use exact same code from test.py
+    api_url = 'https://api.api-ninjas.com/v1/quotes'
+    api_key = '2JORP+gh/eyAMbtZ6/5mFQ==xkb9fNkyTI1H6xT1'
+    
+    try:
+        response = requests.get(api_url, headers={'X-Api-Key': api_key})
+        logging.info(f"Response status code: {response.status_code}")
+        
+        if response.status_code == 200:
             data = response.json()
-            if data:
+            if data and len(data) > 0:
                 quote_data = data[0]
+                logging.info(f"Successfully fetched quote")
                 return f"{quote_data['quote']} — {quote_data['author']}"
             else:
+                logging.error("No quotes found in response")
                 return None
-        except requests.RequestException as e:
-            logging.error(f"Error fetching quote from category '{category}': {e}")
+        else:
+            logging.error(f"Error: {response.status_code}, {response.text}")
             return None
-    else:
-        try:
-            response = requests.get("https://api.quotable.io/random", verify=True)
-            response.raise_for_status()
-            data = response.json()
-            return f"{data['content']} — {data['author']}"
-        except requests.RequestException as e:
-            logging.error(f"Error fetching quote: {e}")
-            return None
+            
+    except Exception as e:
+        logging.error(f"Exception occurred: {str(e)}")
+        return None
+    
+# def generate_quote(category=None):
+#     """
+#     Generate a random quote from the specified category or from any category if not specified.
+
+#     Args:
+#         category (str, optional): The category of the quote. Defaults to None.
+
+#     Returns:
+#         str: A randomly generated quote in the format "<quote> — <author>".
+#              Returns None if there was an error fetching the quote.
+
+#     Raises:
+#         requests.RequestException: If there was an error making the HTTP request.
+#     """
+#     api_key = os.getenv('API_NINJAS_KEY')
+#     if not api_key:
+#         logging.error("API_NINJAS_KEY environment variable not set")
+#         return None
+
+#     api_url = 'https://api.api-ninjas.com/v1/quotes'
+#     headers = {'X-Api-Key': api_key}
+    
+#     # Only include category in params if it's provided
+#     params = {}
+#     if category:
+#         params['category'] = category.lower()
+#         logging.info(f"Fetching quote with category: {category}")
+#     else:
+#         logging.info("Fetching quote without category")
+
+#     try:
+#         logging.info(f"Making request to {api_url}")
+#         if params:
+#             logging.info(f"Request parameters: {params}")
+#             response = requests.get(api_url, headers=headers, params=params)
+#         else:
+#             logging.info("No request parameters")
+#             response = requests.get(api_url, headers=headers)
+        
+#         # Log the actual URL being called (for debugging)
+#         logging.info(f"Request URL: {response.url}")
+        
+#         response.raise_for_status()
+#         data = response.json()
+        
+#         if data and len(data) > 0:
+#             quote_data = data[0]
+#             return f"{quote_data['quote']} — {quote_data['author']}"
+#         else:
+#             if category:
+#                 logging.error(f"No quotes found for category: {category}")
+#             else:
+#                 logging.error("No quotes found")
+#             return None
+            
+#     except requests.RequestException as e:
+#         if hasattr(e.response, 'text'):
+#             logging.error(f"API Response: {e.response.text}")
+#         logging.error(f"Error fetching quote{' for category ' + category if category else ''}: {e}")
+#         return None
 
 def translate_quote(quote, target_lang):
     """

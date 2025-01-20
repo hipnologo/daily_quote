@@ -141,3 +141,15 @@ cython_debug/
 
 .DS_Store
 daily_quote.log
+
+# Docker specific
+.env
+docker-compose.override.yml
+
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+
+# Logs
+*.log
