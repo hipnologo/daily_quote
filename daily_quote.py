@@ -5,6 +5,7 @@ import requests
 import logging
 import argparse
 from datetime import datetime
+from urllib.parse import quote, unquote
 
 # Dynamically construct the local repository path
 #local_repo_path = os.path.join(os.path.expanduser('~'), 'projects/GitHub/daily_quote')
@@ -16,92 +17,109 @@ logging.basicConfig(filename=os.path.join(local_repo_path, 'daily_quote.log'), l
 def generate_quote(category=None):
     """
     Generate a random quote from the specified category or from any category if not specified.
+
+    Args:
+        category (str, optional): The category of the quote. Defaults to None.
+
+    Returns:
+        str: A randomly generated quote in the format "<quote> — <author>".
+             Returns None if there was an error fetching the quote.
     """
-    # Use exact same code from test.py
-    api_url = 'https://api.api-ninjas.com/v1/quotes'
-    api_key = '2JORP+gh/eyAMbtZ6/5mFQ==xkb9fNkyTI1H6xT1'
-    
-    try:
-        response = requests.get(api_url, headers={'X-Api-Key': api_key})
-        logging.info(f"Response status code: {response.status_code}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            if data and len(data) > 0:
-                quote_data = data[0]
-                logging.info(f"Successfully fetched quote")
-                return f"{quote_data['quote']} — {quote_data['author']}"
-            else:
-                logging.error("No quotes found in response")
-                return None
-        else:
-            logging.error(f"Error: {response.status_code}, {response.text}")
-            return None
-            
-    except Exception as e:
-        logging.error(f"Exception occurred: {str(e)}")
+    # Get API key from environment variable
+    api_key = os.getenv('API_NINJAS_KEY')
+    if not api_key:
+        logging.error("API_NINJAS_KEY environment variable not set")
         return None
-    
-# def generate_quote(category=None):
-#     """
-#     Generate a random quote from the specified category or from any category if not specified.
 
-#     Args:
-#         category (str, optional): The category of the quote. Defaults to None.
+    # Clean the API key
+    api_key = api_key.strip()
 
-#     Returns:
-#         str: A randomly generated quote in the format "<quote> — <author>".
-#              Returns None if there was an error fetching the quote.
+    # **DEBUGGING STEP**: Temporarily log the full API key
+    # **Caution**: Ensure this is removed or masked after debugging to protect sensitive information
+    logging.debug(f"Full API Key: '{api_key}'")  # Remove or comment out after verifying
 
-#     Raises:
-#         requests.RequestException: If there was an error making the HTTP request.
-#     """
-#     api_key = os.getenv('API_NINJAS_KEY')
-#     if not api_key:
-#         logging.error("API_NINJAS_KEY environment variable not set")
-#         return None
+    # Log masked version of API key for debugging
+    masked_key = f"{api_key[:4]}{'*' * (len(api_key) - 4)}"
+    logging.info(f"Using API key (masked): {masked_key}")
 
-#     api_url = 'https://api.api-ninjas.com/v1/quotes'
-#     headers = {'X-Api-Key': api_key}
-    
-#     # Only include category in params if it's provided
-#     params = {}
-#     if category:
-#         params['category'] = category.lower()
-#         logging.info(f"Fetching quote with category: {category}")
-#     else:
-#         logging.info("Fetching quote without category")
+    api_url = 'https://api.api-ninjas.com/v1/quotes'
+    headers = {'X-Api-Key': api_key}
 
-#     try:
-#         logging.info(f"Making request to {api_url}")
-#         if params:
-#             logging.info(f"Request parameters: {params}")
-#             response = requests.get(api_url, headers=headers, params=params)
-#         else:
-#             logging.info("No request parameters")
-#             response = requests.get(api_url, headers=headers)
-        
-#         # Log the actual URL being called (for debugging)
-#         logging.info(f"Request URL: {response.url}")
-        
-#         response.raise_for_status()
-#         data = response.json()
-        
-#         if data and len(data) > 0:
-#             quote_data = data[0]
-#             return f"{quote_data['quote']} — {quote_data['author']}"
-#         else:
-#             if category:
-#                 logging.error(f"No quotes found for category: {category}")
-#             else:
-#                 logging.error("No quotes found")
-#             return None
-            
-#     except requests.RequestException as e:
-#         if hasattr(e.response, 'text'):
-#             logging.error(f"API Response: {e.response.text}")
-#         logging.error(f"Error fetching quote{' for category ' + category if category else ''}: {e}")
-#         return None
+    # Prepare parameters
+    params = {}
+    if category:
+        params['category'] = category.lower()
+        logging.info(f"Fetching quote with category: {category}")
+    else:
+        logging.info("Fetching quote without category")
+
+    try:
+        # Debug URL construction
+        debug_url = api_url
+        if params:
+            debug_url += f"?{requests.compat.urlencode(params)}"
+        logging.info(f"Making request to: {debug_url}")
+        logging.info("Headers being sent (key masked): X-Api-Key: " + "*" * len(api_key))
+
+        # Make the request
+        response = requests.get(
+            api_url,
+            headers=headers,
+            params=params if params else None,
+            timeout=10
+        )
+
+        # Log response details
+        logging.info(f"Response Status Code: {response.status_code}")
+        logging.info(f"Response Headers: {dict(response.headers)}")
+
+        # Check status code first
+        if response.status_code != 200:
+            logging.error(f"API returned status code {response.status_code}")
+            logging.error(f"Response content: {response.text}")
+            return None
+
+        # Parse response
+        try:
+            data = response.json()
+        except ValueError as e:
+            logging.error(f"Failed to parse JSON response: {e}")
+            logging.error(f"Raw response: {response.text}")
+            return None
+
+        # Check data
+        if not data:
+            logging.error("Empty response from API")
+            return None
+
+        if len(data) == 0:
+            logging.error("No quotes found in response")
+            return None
+
+        # Extract quote
+        quote_data = data[0]
+        if not all(key in quote_data for key in ['quote', 'author']):
+            logging.error(f"Incomplete quote data received: {quote_data}")
+            return None
+
+        logging.info("Successfully fetched quote")
+        logging.info(f"Quote category: {quote_data.get('category', 'not specified')}")
+        return f"{quote_data['quote']} — {quote_data['author']}"
+
+    except requests.exceptions.Timeout:
+        logging.error("Request timed out after 10 seconds")
+        return None
+    except requests.exceptions.ConnectionError as e:
+        logging.error(f"Connection error occurred: {e}")
+        return None
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Request failed: {e}")
+        if hasattr(e.response, 'text'):
+            logging.error(f"API Response: {e.response.text}")
+        return None
+    except Exception as e:
+        logging.error(f"Unexpected error: {str(e)}")
+        return None
 
 def translate_quote(quote, target_lang):
     """
