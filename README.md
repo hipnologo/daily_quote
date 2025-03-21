@@ -3,10 +3,24 @@
 ![Daily Quote](public/daily_quote.png)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+![Python Version](https://img.shields.io/badge/python-3.10-blue)
 [![Docker](https://img.shields.io/badge/Docker-Available-green.svg)](https://www.docker.com/)
+![Build Status](https://img.shields.io/github/actions/workflow/status/hipnologo/daily_quote/daily-quote.yml?branch=main)
+![Last Commit](https://img.shields.io/github/last-commit/hipnologo/daily_quote)
+![Code Size](https://img.shields.io/github/languages/code-size/hipnologo/daily_quote)
+![Issues](https://img.shields.io/github/issues/hipnologo/daily_quote)
+![Forks](https://img.shields.io/github/forks/hipnologo/daily_quote)
+![Stars](https://img.shields.io/github/stars/hipnologo/daily_quote)
 
 The **Daily Quote Generator** is a Python-based automation tool that fetches a random inspirational quote daily from a public API and commits it to this repository. This project showcases automation, API integration, sentiment analysis, and containerization using Docker.
+
+## Technologies Used
+
+![Python](https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![GitHub](https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![HTML](https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![Shell](https://img.shields.io/badge/shell_script-121011?style=for-the-badge&logo=gnu-bash&logoColor=white)
 
 ## Table of Contents
 
