@@ -153,3 +153,6 @@ __pycache__/
 
 # Logs
 *.log
+
+/ideation
+ideation/*
