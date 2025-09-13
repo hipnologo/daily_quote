@@ -1,0 +1,50 @@
+name: Auto Merge Dependabot PRs
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled]
+
+jobs:
+  automerge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Enable auto-merge for Dependabot PR
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          pull-request-number: ${{ github.event.pull_request.number }}
+          merge-method: squash
+
+      - name: Merge PR if up-to-date and all checks passed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+
+            // Only merge if auto-merge is enabled, PR is up-to-date, and all checks passed
+            if (
+              pr.data.auto_merge &&
+              pr.data.mergeable_state === 'clean' &&
+              pr.data.mergeable &&
+              pr.data.state === 'open'
+            ) {
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                merge_method: 'squash'
+              });
+              console.log('Dependabot PR auto-merged!');
+            } else {
+              console.log('PR not ready for auto-merge.');
+            }
