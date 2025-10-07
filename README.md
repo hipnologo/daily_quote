@@ -103,22 +103,38 @@ This application consists of four main components:
 - **Data Visualization**: t-SNE plots and sentiment distribution charts
 - **Performance Metrics**: System health monitoring and statistics
 
-### 🔐 **Security & Management**
-- **JWT Authentication**: Secure admin access with token-based auth
-- **Role-based Access**: Administrative privileges and user management
-- **API Rate Limiting**: Protection against abuse and overuse
-- **Environment Configuration**: Secure credential management
+### 🌐 **Public Website Features**
+- **Beautiful Glassmorphism UI**: Modern design with backdrop blur effects and gradient backgrounds
+- **Multilingual Support**: Quotes available in 4 languages (EN, ES, PT, IT)
+- **Interactive Controls**: Navigation buttons, auto-advance, and speech synthesis
+- **Mobile Responsive**: Optimized for all device sizes with touch-friendly controls
+- **Accessibility**: ARIA labels, keyboard navigation, and screen reader support
+- **PWA Ready**: Progressive Web App with offline functionality and service worker
+- **SEO Optimized**: Comprehensive meta tags, Open Graph, Twitter Cards, and structured data
+- **Auto-advance**: Quotes change automatically every 15 seconds
+- **Keyboard Navigation**: Arrow keys for navigation, Enter for speech, Space for next quote
+- **Touch/Swipe Support**: Mobile gesture controls for quote navigation
 
-### 🛠️ **Development & Deployment**
-- **Dockerized Setup**: Complete containerization for easy deployment
-- **RESTful API**: Well-documented endpoints for all operations
-- **TypeScript Support**: Type-safe frontend development
-- **Hot Reload**: Development servers with live updates
-- **Comprehensive Logging**: Detailed monitoring and troubleshooting
+## Live Demo
 
-## Screenshot
+🌐 **[View Live Demo](https://www.inspirartransforma.com)**
 
-![Daily Quote](public/daily_quote.png)
+## Deployment Files
+
+### Required Files for Web Server:
+```
+📁 Root Directory:
+├── index.html                    # Main website file
+├── manifest.json                 # PWA manifest
+├── service-worker.js             # Service worker for PWA
+├── offline.html                  # Offline fallback page
+├── daily_quote.png              # App icon
+├── quotes.txt                   # English quotes
+├── quotes_es.txt                # Spanish quotes  
+├── quotes_pt.txt                # Portuguese quotes
+├── quotes_it.txt                # Italian quotes
+└── .htaccess                    # Apache configuration (optional)
+```
 
 ## Getting Started
 

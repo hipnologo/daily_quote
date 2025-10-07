@@ -3,18 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Inspiration</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <title>Daily Inspiration - Motivational Quotes for Daily Life | Quote of the Day</title>
+    <meta name="description" content="Discover inspiring daily quotes and motivational sayings to brighten your day. Browse our collection of wisdom, inspiration, and life lessons in multiple languages including English, Spanish, Portuguese, and Italian.">
+    <meta name="keywords" content="daily quotes, inspirational quotes, motivational sayings, quote of the day, wisdom quotes, life lessons, inspiration, daily motivation">
+    <meta name="author" content="Daily Quote Project">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.inspirartransforma.com">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.inspirartransforma.com">
+    <meta property="og:title" content="Daily Inspiration - Motivational Quotes for Daily Life">
+    <meta property="og:description" content="Discover inspiring daily quotes and motivational sayings to brighten your day. Browse our collection of wisdom, inspiration, and life lessons in multiple languages.">
+    <meta property="og:image" content="https://www.inspirartransforma.com/images/quote-og-image.png">
+    <meta property="og:site_name" content="Daily Inspiration">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://www.inspirartransforma.com">
+    <meta property="twitter:title" content="Daily Inspiration - Motivational Quotes for Daily Life">
+    <meta property="twitter:description" content="Discover inspiring daily quotes and motivational sayings to brighten your day. Browse our collection of wisdom, inspiration, and life lessons in multiple languages.">
+    <meta property="twitter:image" content="https://www.inspirartransforma.com/images/quote-twitter-card.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/daily_quote.png">
+    <meta name="theme-color" content="#667eea">
+    <meta name="msapplication-TileColor" content="#667eea">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-524XC8SLSR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-524XC8SLSR');
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Daily Inspiration",
+      "description": "Daily motivational quotes and inspirational sayings to brighten your day. Browse our collection of wisdom, inspiration, and life lessons in multiple languages.",
+      "url": "https://www.inspirartransforma.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.inspirartransforma.com?search={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "Daily Quotes Collection",
+      "description": "A curated collection of inspirational quotes and motivational sayings"
+    }
+    </script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
-            <!-- Google tag (gtag.js) -->
-            <script async src="https://www.googletagmanager.com/gtag/js?id=G-524XC8SLSR"></script>
-            <script>
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-
-                gtag('config', 'G-524XC8SLSR');
-            </script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
         
@@ -265,11 +318,12 @@
             animation: pulse 1.5s infinite;
         }
 
-        /* Responsive design */
+        /* Enhanced mobile touch targets */
         @media (max-width: 768px) {
             .quote-container {
                 padding: 2.5rem 2rem;
                 margin: 1rem;
+                min-height: 60vh;
             }
             
             .controls {
@@ -280,6 +334,9 @@
             .control-btn {
                 width: 48px;
                 height: 48px;
+                /* Ensure minimum 44px touch target */
+                min-width: 44px;
+                min-height: 44px;
             }
             
             .language-selector {
@@ -291,17 +348,79 @@
             .lang-btn {
                 width: 36px;
                 height: 36px;
+                /* Ensure minimum 44px touch target */
+                min-width: 44px;
+                min-height: 44px;
+            }
+            
+            /* Improve text readability on mobile */
+            #quote {
+                font-size: clamp(1.2rem, 5vw, 2rem);
+                line-height: 1.5;
+            }
+            
+            /* Better progress bar visibility */
+            .progress-indicator {
+                bottom: 0.5rem;
+                width: 150px;
+            }
+        }
+        
+        /* Additional mobile improvements */
+        @media (max-width: 480px) {
+            .quote-container {
+                padding: 2rem 1.5rem;
+                margin: 0.5rem;
+            }
+            
+            .quote-mark {
+                font-size: 6rem;
+            }
+            
+            /* Stack controls vertically on very small screens */
+            .controls {
+                flex-direction: column;
+                gap: 0.5rem;
+                bottom: 1rem;
+            }
+            
+            .control-btn {
+                width: 44px;
+                height: 44px;
+            }
+        }
+        
+        /* Improved accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
             }
         }
 
-        /* Hidden elements */
-        #quoteImage {
-            display: none;
+        /* Enhanced accessibility and focus states */
+        .control-btn:focus,
+        .lang-btn:focus {
+            outline: 2px solid rgba(255, 255, 255, 0.8);
+            outline-offset: 2px;
+        }
+        
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .quote-container {
+                border: 2px solid rgba(255, 255, 255, 0.5);
+            }
+            
+            .control-btn,
+            .lang-btn {
+                border: 2px solid rgba(255, 255, 255, 0.5);
+            }
         }
     </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center px-4 bg-gray-100 dark:bg-gray-900">
+<body>
     <div class="bg-particles">
         <div class="particle"></div>
         <div class="particle"></div>
