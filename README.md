@@ -43,7 +43,7 @@ The **Daily Quote Generator & Admin Dashboard** is a comprehensive application f
   - [Architecture](#architecture)
   - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
-    - [Installation](#installation)
+    - [Installation & Setup](#installation--setup)
     - [Usage](#usage)
   - [API Documentation](#api-documentation)
   - [Contributing](#contributing)
@@ -138,66 +138,109 @@ This application consists of four main components:
 
 ## Getting Started
 
-Follow these instructions to set up and run the Daily Quote Generator on your local machine.
+Follow these instructions to set up and run the Daily Quote Generator and Admin Dashboard on your local machine.
 
 ### Prerequisites
 
-- **Python:** Version 3.8 or higher. [Download Python](https://www.python.org/downloads/)
+- **Python:** Version 3.10 or higher. [Download Python](https://www.python.org/downloads/)
+- **Node.js:** Version 18 or higher (for Admin Dashboard). [Download Node.js](https://nodejs.org/)
 - **Git:** For version control. [Download Git](https://git-scm.com/downloads)
 - **Docker:** (Optional) For containerization. [Download Docker](https://www.docker.com/get-started)
 
-### Installation
+### Installation & Setup
 
 1. **Clone the Repository:**
-
    ```bash
    git clone https://github.com/hipnologo/daily_quote.git
-   ```
-2. **Navigate to the project directory:**
-   ```
    cd daily_quote
    ```
-3. **Install Python Dependencies:**
-   It's recommended to use a virtual environment.
+
+2. **Environment Configuration:**
+   Create a `.env` file in the root directory based on the sample:
+   ```bash
+   cp .env.sample .env
    ```
+   Edit `.env` and add your API keys and configuration:
+   - `API_NINJAS_KEY`: Get one from [API Ninjas](https://api-ninjas.com/)
+   - `SECRET_KEY`: Generate a secure random string for the backend
+   - `DATABASE_URL`: Defaults to SQLite, change if using PostgreSQL
+
+3. **Setup Daily Quote Script (Root):**
+   ```bash
+   # Create virtual environment
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install --upgrade pip
+   
+   # Activate virtual environment
+   # Windows:
+   venv\Scripts\activate
+   # Linux/Mac:
+   source venv/bin/activate
+   
+   # Install dependencies
    pip install -r requirements.txt
-   ```
-4. Install NLTK Data:
-   The script uses NLTK's VADER for sentiment analysis.
-   ```
+   
+   # Install NLTK Data (for sentiment analysis)
    python -c "import nltk; nltk.download('vader_lexicon')"
+   ```
+
+4. **Setup Backend API:**
+   ```bash
+   cd admin-dashboard/api
+   
+   # Install backend dependencies (using the same venv is fine, or create a new one)
+   pip install -r requirements.txt
+   
+   # Initialize Database
+   python start.py
+   ```
+
+5. **Setup Frontend Dashboard:**
+   ```bash
+   cd ../..  # Go back to root
+   cd admin-dashboard
+   
+   # Install Node.js dependencies
+   npm install
    ```
 
 ### Usage
 
-#### Daily Quote Generator
+#### 1. Run Daily Quote Generator
 Run the script manually to generate and commit a new quote:
 ```bash
+# From root directory
 python daily_quote.py
 ```
 
-#### Admin Dashboard
-1. **Start the Backend API:**
-   ```bash
-   cd admin-dashboard/api
-   python simple_main.py
-   ```
-   Backend will be available at `http://localhost:8000`
+#### 2. Run Admin Dashboard (Full Stack)
+You need two terminals:
 
-2. **Start the Frontend Dashboard:**
-   ```bash
-   cd admin-dashboard
-   npm run dev --port 3001
-   ```
-   Dashboard will be available at `http://localhost:3001`
+*Terminal 1 (Backend):*
+```bash
+cd admin-dashboard/api
+python simple_main.py
+# Backend running at http://localhost:8000
+```
+
+*Terminal 2 (Frontend):*
+```bash
+cd admin-dashboard
+npm run dev
+# Frontend running at http://localhost:3001
+```
 
 #### Docker Deployment
+Run the entire stack with Docker Compose:
 ```bash
 docker-compose up -d
 ```
+
+## Security
+
+- **Environment Variables**: Sensitive data like API keys and Database URLs are managed via `.env` files. Never commit `.env` to version control.
+- **Secret Keys**: The `SECRET_KEY` in `.env` is used for JWT token generation. **Change this to a strong, random string in production.**
+- **Logging**: The application logs to `daily_quote.log`. API keys are automatically masked in logs to prevent accidental leakage.
+- **CORS**: The backend is configured to allow specific origins. Update `admin-dashboard/api/main.py` to restrict origins in production.
 
 #### Automation
 The quote generation is automated via GitHub Actions and runs daily. You can also schedule locally using cron jobs (Linux/macOS) or Task Scheduler (Windows).
