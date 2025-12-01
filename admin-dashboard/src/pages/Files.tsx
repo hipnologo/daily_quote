@@ -5,9 +5,6 @@ import {
   Download, 
   Upload, 
   Eye, 
-  Edit, 
-  Trash2,
-  Copy,
   RefreshCw,
   X
 } from 'lucide-react'

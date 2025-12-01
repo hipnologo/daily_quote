@@ -8,12 +8,40 @@ from dotenv import load_dotenv
 from database import engine, SessionLocal, Base
 from routers import quotes, auth, sentiment, vectors, system, files
 from models import User, Quote, SentimentResult, VectorSpace
+from models.user import UserRole
+from utils.auth import get_password_hash
 
 # Load environment variables
 load_dotenv()
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+
+def init_default_admin():
+    """Create default admin user if none exists"""
+    db = SessionLocal()
+    try:
+        # Check if any admin user exists
+        admin_exists = db.query(User).filter(User.role == UserRole.ADMIN.value).first()
+        if not admin_exists:
+            default_password = os.getenv("DEFAULT_ADMIN_PASSWORD", "admin")
+            admin = User(
+                username="admin",
+                email="admin@dailyquote.local",
+                hashed_password=get_password_hash(default_password),
+                role=UserRole.ADMIN.value,
+                is_active=True
+            )
+            db.add(admin)
+            db.commit()
+            print(f"✓ Default admin user created (username: admin)")
+    except Exception as e:
+        print(f"Warning: Could not create default admin: {e}")
+    finally:
+        db.close()
+
+# Initialize default admin user
+init_default_admin()
 
 app = FastAPI(
     title="Daily Quote Admin API",

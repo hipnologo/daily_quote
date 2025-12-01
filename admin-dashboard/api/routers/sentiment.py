@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict
 from pydantic import BaseModel
@@ -81,7 +81,7 @@ async def get_sentiment_distribution(
 
 @router.get("/quotes/{sentiment_type}")
 async def get_quotes_by_sentiment(
-    sentiment_type: str = Query(..., regex="^(positive|negative|neutral)$"),
+    sentiment_type: str = Path(..., regex="^(positive|negative|neutral)$"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     language: Optional[str] = Query(None, regex="^(en|es|pt|it)$"),

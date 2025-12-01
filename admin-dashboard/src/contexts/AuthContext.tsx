@@ -20,14 +20,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: currentUser, isLoading: userLoading, error: userError } = useCurrentUser()
 
   useEffect(() => {
+    const token = localStorage.getItem('auth_token')
+    
     if (currentUser) {
       setUser(currentUser)
+      setLoading(false)
     } else if (userError) {
       // Token is invalid or expired
       localStorage.removeItem('auth_token')
       setUser(null)
+      setLoading(false)
+    } else if (!token) {
+      // No token, no need to wait
+      setUser(null)
+      setLoading(false)
+    } else {
+      setLoading(userLoading)
     }
-    setLoading(userLoading)
   }, [currentUser, userError, userLoading])
 
   const login = async (username: string, password: string): Promise<boolean> => {

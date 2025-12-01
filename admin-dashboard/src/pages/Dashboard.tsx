@@ -3,10 +3,8 @@ import {
   FileText, 
   TrendingUp, 
   Activity,
-  Users,
   Database
 } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { useQuoteStats, useSystemHealth } from '../hooks/useApi'
 
 // Recent activity will be fetched from API in future version

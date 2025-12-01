@@ -19,9 +19,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Configure git
-RUN git config --global user.name "github-actions[bot]" && \
-    git config --global user.email "github-actions[bot]@users.noreply.github.com" && \
-    git config --global --add safe.directory /app
+# RUN git config --global user.name "github-actions[bot]" && \
+#     git config --global user.email "github-actions[bot]@users.noreply.github.com" && \
+#     git config --global --add safe.directory /app
+
+RUN if command -v git >/dev/null 2>&1; then \
+      git config --global user.name "github-actions[bot]" && \
+      git config --global user.email "github-actions[bot]@users.noreply.github.com" && \
+      git config --global --add safe.directory /app; \
+    else \
+      echo "git not installed — skipping git config"; \
+    fi
 
 # Create a volume for persisting git credentials
 VOLUME /root/.git-credentials

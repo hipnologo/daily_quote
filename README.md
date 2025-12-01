@@ -235,6 +235,17 @@ Run the entire stack with Docker Compose:
 docker-compose up -d
 ```
 
+For checking the containers:
+```bash
+ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+ ```
+
+##### Quick troubleshooting
+Verify container logs:
+```
+docker logs daily-quote-api --tail 30
+```
+
 ## Security
 
 - **Environment Variables**: Sensitive data like API keys and Database URLs are managed via `.env` files. Never commit `.env` to version control.

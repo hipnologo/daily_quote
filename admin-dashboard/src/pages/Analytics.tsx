@@ -14,7 +14,7 @@ import {
   Line,
   ResponsiveContainer
 } from 'recharts'
-import { TrendingUp, Heart, Frown, Meh } from 'lucide-react'
+import { TrendingUp, Heart } from 'lucide-react'
 
 // Mock data for charts
 const sentimentData = [
@@ -122,7 +122,7 @@ export default function Analytics() {
                 fill="#8884d8"
                 dataKey="value"
               >
-                {sentimentData.map((entry, index) => (
+                {sentimentData.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

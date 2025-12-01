@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:8000/api'
+// Use relative URL - Nginx will proxy /api to the backend
+const API_BASE_URL = '/api'
 
 // Create axios instance with default config
 const api = axios.create({
@@ -19,13 +20,13 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Handle auth errors
+// Handle auth errors - don't redirect, let the AuthContext handle it
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token')
-      window.location.href = '/login'
+      // Don't redirect here - let AuthContext manage auth state
     }
     return Promise.reject(error)
   }
@@ -85,8 +86,20 @@ export interface SystemHealth {
 // API Services
 export const authApi = {
   login: async (username: string, password: string): Promise<{ access_token: string; user: User }> => {
-    const response = await api.post('/auth/login', { username, password })
-    return response.data
+    // OAuth2PasswordRequestForm expects form data, not JSON
+    const formData = new URLSearchParams()
+    formData.append('username', username)
+    formData.append('password', password)
+    
+    const response = await api.post('/auth/login', formData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    })
+    
+    // API returns { user, token: { access_token, ... } }
+    return {
+      access_token: response.data.token.access_token,
+      user: response.data.user
+    }
   },
 
   getCurrentUser: async (): Promise<User> => {

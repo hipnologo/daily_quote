@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { 
   Server, 
-  Database, 
-  Activity, 
   AlertCircle,
   CheckCircle,
   Clock,
@@ -28,12 +26,12 @@ const mockProcesses = [
 ]
 
 export default function System() {
-  const { data: health = mockSystemHealth, isLoading: healthLoading } = useQuery({
+  const { data: health = mockSystemHealth } = useQuery({
     queryKey: ['system-health'],
     queryFn: async () => mockSystemHealth
   })
 
-  const { data: processes = mockProcesses, isLoading: processesLoading } = useQuery({
+  const { data: processes = mockProcesses } = useQuery({
     queryKey: ['system-processes'],
     queryFn: async () => mockProcesses
   })

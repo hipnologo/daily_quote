@@ -5,3 +5,8 @@ python-multipart
 python-dotenv
 vaderSentiment
 psutil
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
+numpy
+scikit-learn

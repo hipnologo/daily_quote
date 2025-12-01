@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useState } from 'react'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Quotes from './pages/Quotes'

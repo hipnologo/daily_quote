@@ -10,10 +10,13 @@ import {
 
 // Auth hooks
 export const useCurrentUser = () => {
+  const token = localStorage.getItem('auth_token')
   return useQuery({
     queryKey: ['current-user'],
     queryFn: authApi.getCurrentUser,
     retry: false,
+    enabled: !!token, // Only fetch if we have a token
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
   })
 }
 

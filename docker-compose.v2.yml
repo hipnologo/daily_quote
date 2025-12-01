@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # Backend API (FastAPI)
+  # ============================================
+  api:
+    build:
+      context: ./admin-dashboard/api
+      dockerfile: Dockerfile
+    container_name: daily-quote-api
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./daily_quote_admin.db}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./quotes.txt:/app/quotes.txt:ro
+      - ./quotes_es.txt:/app/quotes_es.txt:ro
+      - ./quotes_pt.txt:/app/quotes_pt.txt:ro
+      - ./quotes_it.txt:/app/quotes_it.txt:ro
+      - api-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ============================================
+  # Frontend (React + Vite) - Production Build
+  # ============================================
+  frontend:
+    build:
+      context: ./admin-dashboard
+      dockerfile: Dockerfile
+    container_name: daily-quote-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    environment:
+      - VITE_API_URL=http://api:8000
+    restart: unless-stopped
+
+  # ============================================
+  # Daily Quote Generator (Cron Job)
+  # ============================================
+  quote-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: daily-quote-generator
+    environment:
+      - API_NINJAS_KEY=${API_NINJAS_KEY}
+      - GIT_CREDENTIALS=${GIT_CREDENTIALS}
+    volumes:
+      - .:/app
+    profiles:
+      - generator  # Only runs when explicitly requested
+    command: ["python", "daily_quote.py"]
+
+volumes:
+  api-data:

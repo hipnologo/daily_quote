@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { Search, Filter, Plus, Edit, Trash2, Eye, Download, Upload } from 'lucide-react'
-import { useQuotes, useDeleteQuote } from '../hooks/useApi'
+import { useQuotes } from '../hooks/useApi'
 
 export default function Quotes() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedLanguage, setSelectedLanguage] = useState('all')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [showAddModal, setShowAddModal] = useState(false)
 
   const { data: quotesResponse, isLoading } = useQuotes({
     search: searchTerm,
@@ -36,10 +35,7 @@ export default function Quotes() {
             <Upload className="h-4 w-4 mr-2" />
             Import
           </button>
-          <button 
-            className="btn-primary"
-            onClick={() => setShowAddModal(true)}
-          >
+          <button className="btn-primary">
             <Plus className="h-4 w-4 mr-2" />
             Add Quote
           </button>
