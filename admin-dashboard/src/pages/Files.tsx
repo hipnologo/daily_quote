@@ -60,12 +60,12 @@ export default function Files() {
           </div>
         ) : (
           files.map((file) => (
-            <div key={file.name} className="card p-6">
+            <div key={file.filename} className="card p-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
                   <FileText className="h-8 w-8 text-blue-500" />
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">{file.name}</h3>
+                    <h3 className="text-sm font-medium text-gray-900">{file.filename}</h3>
                     <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
                   </div>
                 </div>
@@ -85,7 +85,7 @@ export default function Files() {
               <div className="mt-4 flex space-x-2">
                 <button 
                   className="flex-1 btn-outline text-xs"
-                  onClick={() => setSelectedFile(file.name)}
+                  onClick={() => setSelectedFile(file.filename)}
                 >
                   <Eye className="h-3 w-3 mr-1" />
                   View
@@ -97,7 +97,7 @@ export default function Files() {
               </div>
             </div>
           ))
-        )}
+        )}}
       </div>
 
       {/* File Preview Modal */}

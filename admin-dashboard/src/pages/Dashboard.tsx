@@ -20,8 +20,8 @@ export default function Dashboard() {
   
   const stats = {
     totalQuotes: quoteStats?.total_quotes || 0,
-    totalFiles: filesData?.files?.length || Object.keys(quoteStats?.by_language || {}).length || 0,
-    languages: Object.keys(quoteStats?.by_language || {}).length || 0,
+    totalFiles: filesData?.files?.length || 0,
+    languages: quoteStats?.languages || 0,
     systemHealth: systemHealth?.status || 'unknown'
   }
 
