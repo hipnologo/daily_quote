@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { 
   FileText, 
   Download, 
@@ -8,25 +7,13 @@ import {
   RefreshCw,
   X
 } from 'lucide-react'
-
-// Mock data
-const mockFiles = [
-  { name: 'quotes.txt', size: 45678, modified: '2024-01-15T10:30:00Z', lines: 1247 },
-  { name: 'quotes_es.txt', size: 32145, modified: '2024-01-14T15:20:00Z', lines: 892 },
-  { name: 'quotes_pt.txt', size: 28934, modified: '2024-01-13T09:15:00Z', lines: 756 },
-  { name: 'quotes_it.txt', size: 21567, modified: '2024-01-12T14:45:00Z', lines: 634 },
-]
+import { useFiles, useFileContent } from '../hooks/useApi'
 
 export default function Files() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
 
-  const { data: files = mockFiles, isLoading, refetch } = useQuery({
-    queryKey: ['quote-files'],
-    queryFn: async () => {
-      // Replace with actual API call
-      return mockFiles
-    }
-  })
+  const { data: filesData, isLoading, refetch } = useFiles()
+  const files = filesData?.files || []
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
@@ -130,28 +117,14 @@ interface FilePreviewModalProps {
 }
 
 function FilePreviewModal({ filename, onClose }: FilePreviewModalProps) {
-  const { data: fileContent, isLoading } = useQuery({
-    queryKey: ['file-content', filename],
-    queryFn: async () => {
-      // Replace with actual API call
-      return {
-        filename,
-        quote_count: 150,
-        quotes: [
-          "The only way to do great work is to love what you do. - Steve Jobs",
-          "Innovation distinguishes between a leader and a follower. - Steve Jobs",
-          "Stay hungry, stay foolish. - Steve Jobs"
-        ]
-      }
-    }
-  })
+  const { data: fileContent, isLoading } = useFileContent(filename)
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900">{filename}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600" title="Close preview">
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -161,14 +134,14 @@ function FilePreviewModal({ filename, onClose }: FilePreviewModalProps) {
         ) : (
           <div className="space-y-4">
             <div className="text-sm text-gray-600">
-              Total quotes: {fileContent?.quote_count}
+              Total quotes: {fileContent?.quote_count || 0}
             </div>
             <div className="max-h-96 overflow-y-auto border rounded-md p-4 bg-gray-50">
-              {fileContent?.quotes.map((quote, index) => (
+              {fileContent?.quotes?.map((quote: string, index: number) => (
                 <div key={index} className="py-2 border-b border-gray-200 last:border-b-0">
                   <p className="text-sm text-gray-900">{quote}</p>
                 </div>
-              ))}
+              )) || <div className="text-gray-500">No quotes found</div>}
             </div>
           </div>
         )}

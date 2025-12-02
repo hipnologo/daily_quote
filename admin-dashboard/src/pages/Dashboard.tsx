@@ -5,7 +5,7 @@ import {
   Activity,
   Database
 } from 'lucide-react'
-import { useQuoteStats, useSystemHealth } from '../hooks/useApi'
+import { useQuoteStats, useSystemHealth, useFiles } from '../hooks/useApi'
 
 // Recent activity will be fetched from API in future version
 const recentActivity = [
@@ -16,11 +16,12 @@ const recentActivity = [
 export default function Dashboard() {
   const { data: quoteStats } = useQuoteStats()
   const { data: systemHealth } = useSystemHealth()
+  const { data: filesData } = useFiles()
   
   const stats = {
     totalQuotes: quoteStats?.total_quotes || 0,
-    totalFiles: quoteStats?.languages || 0, // Using languages as proxy for files
-    dailyViews: quoteStats?.authors || 0, // Using authors as proxy for daily views
+    totalFiles: filesData?.files?.length || Object.keys(quoteStats?.by_language || {}).length || 0,
+    languages: Object.keys(quoteStats?.by_language || {}).length || 0,
     systemHealth: systemHealth?.status || 'unknown'
   }
 
@@ -51,8 +52,8 @@ export default function Dashboard() {
           bgColor="bg-green-100"
         />
         <StatCard
-          title="Daily Views"
-          value={stats.dailyViews.toLocaleString()}
+          title="Languages"
+          value={stats.languages}
           icon={TrendingUp}
           color="text-purple-600"
           bgColor="bg-purple-100"

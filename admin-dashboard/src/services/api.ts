@@ -120,8 +120,13 @@ export const quotesApi = {
     language?: string
     category?: string
   }): Promise<{ quotes: Quote[]; total: number }> => {
-    const response = await api.get('/quotes', { params })
-    return response.data
+    const response = await api.get('/quotes/', { params })
+    // API returns array directly, wrap it
+    const quotes = Array.isArray(response.data) ? response.data : response.data.quotes || []
+    return {
+      quotes,
+      total: quotes.length
+    }
   },
 
   getQuote: async (id: number): Promise<Quote> => {

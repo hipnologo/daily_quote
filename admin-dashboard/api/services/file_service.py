@@ -8,7 +8,14 @@ from datetime import datetime
 class FileService:
     def __init__(self, db: Session):
         self.db = db
-        self.quotes_base_path = Path("../../")  # Root directory with quote files
+        # Check Docker path first, then local dev path
+        docker_path = Path("/app")
+        local_path = Path(__file__).parent.parent.parent.parent
+        
+        if (docker_path / "quotes.txt").exists():
+            self.quotes_base_path = docker_path
+        else:
+            self.quotes_base_path = local_path
     
     async def list_quote_files(self) -> List[Dict[str, Any]]:
         """List all quote files"""
@@ -37,7 +44,7 @@ class FileService:
             raise FileNotFoundError(f"File {filename} not found")
         
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
                 content = f.read()
             
             lines = content.split('\n')
@@ -45,9 +52,9 @@ class FileService:
             
             return {
                 "filename": filename,
-                "content": content,
                 "quote_count": len(quotes),
-                "quotes": quotes[:100]  # Limit to first 100 for preview
+                "quotes": quotes[:100],  # Limit to first 100 for preview
+                "total_lines": len(quotes)
             }
         except Exception as e:
             raise Exception(f"Error reading file {filename}: {str(e)}")
@@ -70,7 +77,7 @@ class FileService:
     def _count_lines(self, file_path: Path) -> int:
         """Count lines in a file"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
                 return sum(1 for line in f if line.strip())
         except:
             return 0
