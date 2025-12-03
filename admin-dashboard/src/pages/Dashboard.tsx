@@ -3,10 +3,8 @@ import {
   FileText, 
   TrendingUp, 
   Activity,
-  Database,
   Plus,
   BarChart3,
-  Download,
   Settings
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -16,9 +14,9 @@ import { useQuoteStats, useSystemHealth, useFiles, useSentimentStats } from '../
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { data: quoteStats, isLoading: quotesLoading } = useQuoteStats()
-  const { data: systemHealth, isLoading: healthLoading } = useSystemHealth()
-  const { data: filesData, isLoading: filesLoading } = useFiles()
+  const { data: quoteStats } = useQuoteStats()
+  const { data: systemHealth } = useSystemHealth()
+  const { data: filesData } = useFiles()
   const { data: sentimentStats } = useSentimentStats()
   
   const stats = {
