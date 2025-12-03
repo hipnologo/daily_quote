@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: daily-quote-api
+  namespace: daily-quote
+  labels:
+    app: daily-quote
+    component: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: daily-quote
+      component: api
+  template:
+    metadata:
+      labels:
+        app: daily-quote
+        component: api
+    spec:
+      containers:
+        - name: api
+          image: daily_quote-api:latest
+          imagePullPolicy: Never  # Use local images for kind
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: daily-quote-config
+            - secretRef:
+                name: daily-quote-secrets
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: api-data
+              mountPath: /app/data
+            - name: quotes-files
+              mountPath: /app/quotes
+      volumes:
+        - name: api-data
+          persistentVolumeClaim:
+            claimName: api-data-pvc
+        - name: quotes-files
+          persistentVolumeClaim:
+            claimName: quotes-files-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: daily-quote-api
+  namespace: daily-quote
+  labels:
+    app: daily-quote
+    component: api
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: daily-quote
+    component: api

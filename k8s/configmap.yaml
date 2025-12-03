@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: daily-quote-config
+  namespace: daily-quote
+  labels:
+    app: daily-quote
+data:
+  # API Configuration
+  DATABASE_URL: "sqlite:///./daily_quote_admin.db"
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  LOG_LEVEL: "INFO"
+  
+  # Frontend Configuration
+  VITE_API_URL: "/api"

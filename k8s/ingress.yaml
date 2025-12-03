@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: daily-quote-ingress
+  namespace: daily-quote
+  labels:
+    app: daily-quote
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: daily-quote.local
+      http:
+        paths:
+          # API routes - proxy to API service
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: daily-quote-api
+                port:
+                  number: 8000
+          # Frontend routes - serve from frontend service
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: daily-quote-frontend
+                port:
+                  number: 80

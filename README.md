@@ -32,6 +32,7 @@ The **Daily Quote Generator & Admin Dashboard** is a comprehensive application f
 
 ### DevOps & Tools
 ![Docker](https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)
 ![GitHub](https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white)
 ![Shell](https://img.shields.io/badge/shell_script-121011?style=for-the-badge&logo=gnu-bash&logoColor=white)
 
@@ -232,7 +233,7 @@ npm run dev
 #### Docker Deployment
 Run the entire stack with Docker Compose:
 ```bash
-docker-compose up -d
+docker-compose -f docker-compose.v2.yml up -d
 ```
 
 For checking the containers:
@@ -245,6 +246,120 @@ Verify container logs:
 ```
 docker logs daily-quote-api --tail 30
 ```
+
+#### Kubernetes Deployment
+
+For production-grade deployments, the application supports Kubernetes via **kind** (Kubernetes in Docker).
+
+##### Prerequisites for Kubernetes
+
+1. **Docker Desktop** with containerd image store enabled
+2. **kind** - Install from [kind.sigs.k8s.io](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+   ```powershell
+   # Windows (PowerShell as Admin)
+   choco install kind
+   # or with winget
+   winget install Kubernetes.kind
+   ```
+3. **kubectl** - Install from [kubernetes.io](https://kubernetes.io/docs/tasks/tools/)
+   ```powershell
+   # Windows (PowerShell as Admin)
+   choco install kubernetes-cli
+   ```
+
+##### Docker Desktop Setup (Recommended)
+
+In Docker Desktop settings:
+1. Go to **Settings** → **Kubernetes**
+2. Select **kind** as the cluster type
+3. ✅ Enable "Create a cluster containing one or more nodes with kind"
+4. Ensure **containerd image store** is enabled in Settings → General
+
+##### Quick Start (Windows)
+
+```powershell
+# From the project root
+cd k8s
+
+# Deploy with automatic image building
+.\deploy.bat --build
+```
+
+##### Quick Start (Linux/macOS)
+
+```bash
+# From the project root
+cd k8s
+
+# Deploy with automatic image building
+./deploy.sh --build
+```
+
+##### Manual Kubernetes Deployment
+
+```bash
+# 1. Create kind cluster with ingress support
+kind create cluster --config k8s/kind-config.yaml
+
+# 2. Build Docker images
+docker-compose -f docker-compose.v2.yml build
+
+# 3. Load images into kind cluster
+kind load docker-image daily_quote-api:latest --name daily-quote-cluster
+kind load docker-image daily_quote-frontend:latest --name daily-quote-cluster
+
+# 4. Install NGINX Ingress Controller
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+
+# 5. Wait for ingress controller
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=120s
+
+# 6. Deploy application
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/secrets.yaml
+kubectl apply -f k8s/storage.yaml
+kubectl apply -f k8s/api-deployment.yaml
+kubectl apply -f k8s/frontend-deployment.yaml
+kubectl apply -f k8s/ingress.yaml
+```
+
+##### Accessing the Application (Kubernetes)
+
+1. Add to your hosts file (`C:\Windows\System32\drivers\etc\hosts` on Windows):
+   ```
+   127.0.0.1 daily-quote.local
+   ```
+
+2. Access:
+   - **Frontend**: http://daily-quote.local
+   - **API Docs**: http://daily-quote.local/api/docs
+
+##### Useful Kubernetes Commands
+
+```bash
+# View pods
+kubectl get pods -n daily-quote
+
+# View logs
+kubectl logs -n daily-quote -l component=api -f
+
+# Scale deployments
+kubectl scale deployment daily-quote-api --replicas=2 -n daily-quote
+
+# Port forward for debugging
+kubectl port-forward -n daily-quote svc/daily-quote-api 8000:8000
+
+# Cleanup
+cd k8s && .\cleanup.bat           # Windows
+cd k8s && ./cleanup.sh            # Linux/macOS
+cd k8s && .\cleanup.bat --cluster # Delete cluster too
+```
+
+See `k8s/README.md` for detailed Kubernetes documentation.
 
 ## Security
 
