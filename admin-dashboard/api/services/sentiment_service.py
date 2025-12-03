@@ -84,7 +84,11 @@ class SentimentService:
         """Background task to run sentiment analysis"""
         try:
             # Get quotes that need analysis
-            query = self.db.query(Quote).filter(Quote.language == language)
+            query = self.db.query(Quote)
+            
+            # Filter by language if not "all"
+            if language != "all":
+                query = query.filter(Quote.language == language)
             
             if not force_reanalyze:
                 # Only analyze quotes without sentiment results

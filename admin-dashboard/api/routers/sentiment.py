@@ -35,7 +35,7 @@ async def get_sentiment_statistics(
 @router.post("/analyze", response_model=SentimentJobResponse)
 async def start_sentiment_analysis(
     background_tasks: BackgroundTasks,
-    language: Optional[str] = Query("en", regex="^(en|es|pt|it)$"),
+    language: Optional[str] = Query("all", regex="^(en|es|pt|it|all)$"),
     force_reanalyze: bool = Query(False),
     db: Session = Depends(get_database),
     current_user = Depends(get_current_user)

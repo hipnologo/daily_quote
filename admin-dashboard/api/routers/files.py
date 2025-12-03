@@ -8,6 +8,7 @@ from utils.auth import get_current_user
 
 router = APIRouter()
 
+@router.get("", include_in_schema=False)
 @router.get("/")
 async def list_quote_files(
     db: Session = Depends(get_database),
@@ -15,7 +16,8 @@ async def list_quote_files(
 ):
     """List all quote files"""
     service = FileService(db)
-    return await service.list_quote_files()
+    files = await service.list_quote_files()
+    return {"files": files}
 
 @router.get("/{filename}")
 async def read_file(

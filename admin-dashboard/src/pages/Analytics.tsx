@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { 
   BarChart, 
   Bar, 
@@ -13,17 +14,32 @@ import {
   Line,
   ResponsiveContainer
 } from 'recharts'
-import { TrendingUp, Heart, Play, RefreshCw } from 'lucide-react'
-import { useSentimentStats, useQuoteStats, useStartSentimentAnalysis } from '../hooks/useApi'
+import { TrendingUp, Heart, Play, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
+import { useSentimentStats, useQuoteStats, useStartSentimentAnalysis, useSentimentJobStatus } from '../hooks/useApi'
 
 const COLORS = ['#10B981', '#F59E0B', '#EF4444']
 
 export default function Analytics() {
-  const { data: sentimentStats, isLoading: sentimentLoading } = useSentimentStats()
+  const [selectedLanguage, setSelectedLanguage] = useState('all')
+  const [forceReanalyze, setForceReanalyze] = useState(false)
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
+  
+  const { data: sentimentStats, isLoading: sentimentLoading, refetch: refetchSentiment } = useSentimentStats()
   const { data: quoteStats, isLoading: quotesLoading } = useQuoteStats()
   const startAnalysisMutation = useStartSentimentAnalysis()
+  const { data: jobStatus } = useSentimentJobStatus(currentJobId || '')
 
   const isLoading = sentimentLoading || quotesLoading
+
+  // Clear job ID when job completes and refetch sentiment stats
+  useEffect(() => {
+    if (jobStatus?.status === 'completed' || jobStatus?.status === 'failed') {
+      setTimeout(() => {
+        setCurrentJobId(null)
+        refetchSentiment()
+      }, 2000)
+    }
+  }, [jobStatus?.status, refetchSentiment])
 
   // Transform sentiment data for charts
   const sentimentData = sentimentStats ? [
@@ -51,11 +67,16 @@ export default function Analytics() {
 
   const handleStartAnalysis = async () => {
     try {
-      await startAnalysisMutation.mutateAsync({ language: 'all', forceReanalyze: false })
+      const result = await startAnalysisMutation.mutateAsync({ language: selectedLanguage, forceReanalyze })
+      if (result?.job_id) {
+        setCurrentJobId(result.job_id)
+      }
     } catch (error) {
       console.error('Error starting analysis:', error)
     }
   }
+
+  const isAnalyzing = startAnalysisMutation.isPending || (currentJobId && jobStatus?.status === 'running')
 
   if (isLoading) {
     return (
@@ -75,21 +96,76 @@ export default function Analytics() {
             Sentiment analysis and quote statistics
           </p>
         </div>
-        <div className="flex space-x-3">
-          <button 
-            className="btn-outline"
-            onClick={handleStartAnalysis}
-            disabled={startAnalysisMutation.isPending}
+        <div className="flex items-center space-x-3">
+          <select
+            className="input w-32"
+            value={selectedLanguage}
+            onChange={(e) => setSelectedLanguage(e.target.value)}
+            disabled={!!isAnalyzing}
+            title="Select language"
           >
-            {startAnalysisMutation.isPending ? (
+            <option value="all">All Languages</option>
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+            <option value="pt">Portuguese</option>
+            <option value="it">Italian</option>
+          </select>
+          <label className="flex items-center space-x-2 text-sm">
+            <input
+              type="checkbox"
+              checked={forceReanalyze}
+              onChange={(e) => setForceReanalyze(e.target.checked)}
+              disabled={!!isAnalyzing}
+              className="rounded border-gray-300"
+            />
+            <span className="text-gray-600">Force re-analyze</span>
+          </label>
+          <button 
+            className="btn-primary"
+            onClick={handleStartAnalysis}
+            disabled={!!isAnalyzing}
+          >
+            {isAnalyzing ? (
               <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Play className="h-4 w-4 mr-2" />
             )}
-            {startAnalysisMutation.isPending ? 'Analyzing...' : 'Run Analysis'}
+            {isAnalyzing ? 'Analyzing...' : 'Run Analysis'}
           </button>
         </div>
       </div>
+
+      {/* Job Status Banner */}
+      {currentJobId && jobStatus && (
+        <div className={`p-4 rounded-lg flex items-center justify-between ${
+          jobStatus.status === 'completed' ? 'bg-green-50 border border-green-200' :
+          jobStatus.status === 'failed' ? 'bg-red-50 border border-red-200' :
+          'bg-blue-50 border border-blue-200'
+        }`}>
+          <div className="flex items-center space-x-3">
+            {jobStatus.status === 'completed' ? (
+              <CheckCircle className="h-5 w-5 text-green-500" />
+            ) : jobStatus.status === 'failed' ? (
+              <AlertCircle className="h-5 w-5 text-red-500" />
+            ) : (
+              <RefreshCw className="h-5 w-5 text-blue-500 animate-spin" />
+            )}
+            <div>
+              <p className="text-sm font-medium">{jobStatus.message}</p>
+              <p className="text-xs text-gray-500">Progress: {jobStatus.progress?.toFixed(1) || 0}%</p>
+            </div>
+          </div>
+          <div className="w-32 bg-gray-200 rounded-full h-2">
+            <div 
+              className={`h-2 rounded-full transition-all ${
+                jobStatus.status === 'completed' ? 'bg-green-500' :
+                jobStatus.status === 'failed' ? 'bg-red-500' : 'bg-blue-500'
+              }`}
+              style={{ width: `${jobStatus.progress || 0}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
