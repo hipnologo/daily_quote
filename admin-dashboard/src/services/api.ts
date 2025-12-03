@@ -153,9 +153,23 @@ export const quotesApi = {
     languages: number
     authors: number
     categories: number
+    by_language: Record<string, number>
+    by_sentiment: Record<string, number>
+    verified_count: number
   }> => {
     const response = await api.get('/quotes/stats')
-    return response.data
+    const data = response.data
+    
+    // Transform backend response to frontend format
+    return {
+      total_quotes: data.total_quotes,
+      languages: Object.keys(data.by_language).length,
+      authors: 0, // TODO: get from backend if available
+      categories: 0, // TODO: get from backend if available
+      by_language: data.by_language,
+      by_sentiment: data.by_sentiment,
+      verified_count: data.verified_count
+    }
   },
 
   importQuotes: async (file: File, language: string): Promise<{ imported: number; duplicates: number }> => {

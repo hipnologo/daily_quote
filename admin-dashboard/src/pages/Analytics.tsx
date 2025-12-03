@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { 
   BarChart, 
   Bar, 
@@ -14,46 +13,49 @@ import {
   Line,
   ResponsiveContainer
 } from 'recharts'
-import { TrendingUp, Heart } from 'lucide-react'
-
-// Mock data for charts
-const sentimentData = [
-  { name: 'Positive', value: 65, count: 812 },
-  { name: 'Neutral', value: 25, count: 312 },
-  { name: 'Negative', value: 10, count: 123 },
-]
-
-const languageData = [
-  { language: 'English', quotes: 650, sentiment: 0.7 },
-  { language: 'Spanish', quotes: 280, sentiment: 0.6 },
-  { language: 'Portuguese', quotes: 200, sentiment: 0.65 },
-  { language: 'Italian', quotes: 117, sentiment: 0.68 },
-]
-
-const trendsData = [
-  { month: 'Jan', positive: 45, negative: 8, neutral: 20 },
-  { month: 'Feb', positive: 52, negative: 12, neutral: 18 },
-  { month: 'Mar', positive: 48, negative: 10, neutral: 22 },
-  { month: 'Apr', positive: 61, negative: 7, neutral: 15 },
-  { month: 'May', positive: 55, negative: 9, neutral: 19 },
-  { month: 'Jun', positive: 67, negative: 6, neutral: 14 },
-]
+import { TrendingUp, Heart, Play, RefreshCw } from 'lucide-react'
+import { useSentimentStats, useQuoteStats, useStartSentimentAnalysis } from '../hooks/useApi'
 
 const COLORS = ['#10B981', '#F59E0B', '#EF4444']
 
 export default function Analytics() {
-  const { data: analytics, isLoading } = useQuery({
-    queryKey: ['analytics'],
-    queryFn: async () => {
-      // Replace with actual API call
-      return {
-        totalAnalyzed: 1247,
-        averageSentiment: 0.68,
-        topAuthor: 'Steve Jobs',
-        mostPositiveCategory: 'Motivation'
-      }
+  const { data: sentimentStats, isLoading: sentimentLoading } = useSentimentStats()
+  const { data: quoteStats, isLoading: quotesLoading } = useQuoteStats()
+  const startAnalysisMutation = useStartSentimentAnalysis()
+
+  const isLoading = sentimentLoading || quotesLoading
+
+  // Transform sentiment data for charts
+  const sentimentData = sentimentStats ? [
+    { name: 'Positive', value: sentimentStats.positive_count, count: sentimentStats.positive_count },
+    { name: 'Neutral', value: sentimentStats.neutral_count, count: sentimentStats.neutral_count },
+    { name: 'Negative', value: sentimentStats.negative_count, count: sentimentStats.negative_count },
+  ] : []
+
+  // Transform language data
+  const languageData = quoteStats?.by_language ? Object.entries(quoteStats.by_language).map(([lang, count]) => ({
+    language: lang.toUpperCase(),
+    quotes: count as number,
+    sentiment: 0.7 // Placeholder - could be calculated from sentiment data
+  })) : []
+
+  // Mock trends data for now (could be replaced with real time-series data)
+  const trendsData = [
+    { month: 'Jan', positive: 45, negative: 8, neutral: 20 },
+    { month: 'Feb', positive: 52, negative: 12, neutral: 18 },
+    { month: 'Mar', positive: 48, negative: 10, neutral: 22 },
+    { month: 'Apr', positive: 61, negative: 7, neutral: 15 },
+    { month: 'May', positive: 55, negative: 9, neutral: 19 },
+    { month: 'Jun', positive: 67, negative: 6, neutral: 14 },
+  ]
+
+  const handleStartAnalysis = async () => {
+    try {
+      await startAnalysisMutation.mutateAsync({ language: 'all', forceReanalyze: false })
+    } catch (error) {
+      console.error('Error starting analysis:', error)
     }
-  })
+  }
 
   if (isLoading) {
     return (
@@ -66,42 +68,58 @@ export default function Analytics() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Sentiment analysis and quote statistics
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Sentiment analysis and quote statistics
+          </p>
+        </div>
+        <div className="flex space-x-3">
+          <button 
+            className="btn-outline"
+            onClick={handleStartAnalysis}
+            disabled={startAnalysisMutation.isPending}
+          >
+            {startAnalysisMutation.isPending ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Play className="h-4 w-4 mr-2" />
+            )}
+            {startAnalysisMutation.isPending ? 'Analyzing...' : 'Run Analysis'}
+          </button>
+        </div>
       </div>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <MetricCard
           title="Total Analyzed"
-          value={analytics?.totalAnalyzed.toLocaleString() || '0'}
+          value={sentimentStats?.total_analyzed?.toLocaleString() || '0'}
           icon={TrendingUp}
           color="text-blue-600"
           bgColor="bg-blue-100"
         />
         <MetricCard
           title="Avg Sentiment"
-          value={((analytics?.averageSentiment || 0) * 100).toFixed(1) + '%'}
+          value={sentimentStats ? ((sentimentStats.average_compound || 0) * 100).toFixed(1) + '%' : '0%'}
           icon={Heart}
           color="text-green-600"
           bgColor="bg-green-100"
         />
         <MetricCard
-          title="Top Author"
-          value={analytics?.topAuthor || 'N/A'}
+          title="Positive Quotes"
+          value={`${sentimentStats?.positive_count || 0}`}
           icon={TrendingUp}
-          color="text-purple-600"
-          bgColor="bg-purple-100"
+          color="text-emerald-600"
+          bgColor="bg-emerald-100"
         />
         <MetricCard
-          title="Best Category"
-          value={analytics?.mostPositiveCategory || 'N/A'}
+          title="Total Quotes"
+          value={quoteStats?.total_quotes?.toLocaleString() || '0'}
           icon={Heart}
-          color="text-pink-600"
-          bgColor="bg-pink-100"
+          color="text-purple-600"
+          bgColor="bg-purple-100"
         />
       </div>
 
@@ -180,62 +198,34 @@ export default function Analytics() {
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-medium text-gray-900">{item.count}</div>
-                  <div className="text-xs text-gray-500">{item.value}%</div>
+                  <div className="text-xs text-gray-500">
+                    {sentimentStats ? ((item.count / sentimentStats.total_analyzed) * 100).toFixed(1) : 0}%
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Top Authors */}
+        {/* Top Authors - Placeholder for now */}
         <div className="card p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Top Authors</h3>
           <div className="space-y-3">
-            {[
-              { name: 'Steve Jobs', quotes: 45, sentiment: 0.8 },
-              { name: 'Albert Einstein', quotes: 32, sentiment: 0.7 },
-              { name: 'Maya Angelou', quotes: 28, sentiment: 0.9 },
-              { name: 'Winston Churchill', quotes: 24, sentiment: 0.6 },
-            ].map((author) => (
-              <div key={author.name} className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-medium text-gray-900">{author.name}</div>
-                  <div className="text-xs text-gray-500">{author.quotes} quotes</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium text-gray-900">
-                    {(author.sentiment * 100).toFixed(0)}%
-                  </div>
-                  <div className="text-xs text-gray-500">positive</div>
-                </div>
-              </div>
-            ))}
+            <div className="text-center py-8 text-gray-500">
+              <p className="text-sm">Author analytics coming soon</p>
+              <p className="text-xs mt-1">This feature will show sentiment analysis by author</p>
+            </div>
           </div>
         </div>
 
-        {/* Categories */}
+        {/* Categories - Placeholder for now */}
         <div className="card p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Categories</h3>
           <div className="space-y-3">
-            {[
-              { name: 'Motivation', quotes: 156, sentiment: 0.85 },
-              { name: 'Success', quotes: 134, sentiment: 0.78 },
-              { name: 'Life', quotes: 98, sentiment: 0.65 },
-              { name: 'Innovation', quotes: 87, sentiment: 0.72 },
-            ].map((category) => (
-              <div key={category.name} className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-medium text-gray-900">{category.name}</div>
-                  <div className="text-xs text-gray-500">{category.quotes} quotes</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium text-gray-900">
-                    {(category.sentiment * 100).toFixed(0)}%
-                  </div>
-                  <div className="text-xs text-gray-500">positive</div>
-                </div>
-              </div>
-            ))}
+            <div className="text-center py-8 text-gray-500">
+              <p className="text-sm">Category analytics coming soon</p>
+              <p className="text-xs mt-1">This feature will show sentiment analysis by category</p>
+            </div>
           </div>
         </div>
       </div>
