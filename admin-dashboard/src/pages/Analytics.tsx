@@ -44,10 +44,23 @@ export default function Analytics() {
   }, [jobStatus?.status, refetchSentiment])
 
   // Transform sentiment data for charts
-  const sentimentData = sentimentStats ? [
-    { name: 'Positive', value: sentimentStats.positive_count, count: sentimentStats.positive_count },
-    { name: 'Neutral', value: sentimentStats.neutral_count, count: sentimentStats.neutral_count },
-    { name: 'Negative', value: sentimentStats.negative_count, count: sentimentStats.negative_count },
+  const totalAnalyzed = sentimentStats?.total_analyzed || 0
+  const sentimentData = sentimentStats && totalAnalyzed > 0 ? [
+    { 
+      name: 'Positive', 
+      value: parseFloat(((sentimentStats.positive_count / totalAnalyzed) * 100).toFixed(1)), 
+      count: sentimentStats.positive_count 
+    },
+    { 
+      name: 'Neutral', 
+      value: parseFloat(((sentimentStats.neutral_count / totalAnalyzed) * 100).toFixed(1)), 
+      count: sentimentStats.neutral_count 
+    },
+    { 
+      name: 'Negative', 
+      value: parseFloat(((sentimentStats.negative_count / totalAnalyzed) * 100).toFixed(1)), 
+      count: sentimentStats.negative_count 
+    },
   ] : []
 
   // Transform language data
