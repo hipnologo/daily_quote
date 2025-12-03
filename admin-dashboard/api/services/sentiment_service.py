@@ -33,31 +33,30 @@ class SentimentService:
                 "distribution": {"positive": 0.0, "negative": 0.0, "neutral": 0.0}
             }
         
-        # Get sentiment counts
-        sentiment_counts = self.db.query(
-            SentimentResult.sentiment_label,
-            func.count(SentimentResult.id)
-        ).group_by(SentimentResult.sentiment_label).all()
-        
-        counts = {"positive": 0, "negative": 0, "neutral": 0}
-        for label, count in sentiment_counts:
-            counts[label] = count
+        # Get sentiment counts by calculating from compound_score
+        positive_count = self.db.query(SentimentResult).filter(
+            SentimentResult.compound_score >= 0.05
+        ).count()
+        negative_count = self.db.query(SentimentResult).filter(
+            SentimentResult.compound_score <= -0.05
+        ).count()
+        neutral_count = total_analyzed - positive_count - negative_count
         
         # Get average compound score
-        avg_compound = self.db.query(func.avg(SentimentResult.compound)).scalar() or 0.0
+        avg_compound = self.db.query(func.avg(SentimentResult.compound_score)).scalar() or 0.0
         
         # Calculate distribution
         distribution = {
-            "positive": counts["positive"] / total_analyzed * 100,
-            "negative": counts["negative"] / total_analyzed * 100,
-            "neutral": counts["neutral"] / total_analyzed * 100
+            "positive": positive_count / total_analyzed * 100,
+            "negative": negative_count / total_analyzed * 100,
+            "neutral": neutral_count / total_analyzed * 100
         }
         
         return {
             "total_analyzed": total_analyzed,
-            "positive_count": counts["positive"],
-            "negative_count": counts["negative"],
-            "neutral_count": counts["neutral"],
+            "positive_count": positive_count,
+            "negative_count": negative_count,
+            "neutral_count": neutral_count,
             "average_compound": round(avg_compound, 3),
             "distribution": distribution
         }
@@ -137,10 +136,10 @@ class SentimentService:
                     # Create new sentiment result
                     sentiment_result = SentimentResult(
                         quote_id=quote.id,
-                        positive=scores['pos'],
-                        negative=scores['neg'],
-                        neutral=scores['neu'],
-                        compound=scores['compound']
+                        positive_score=scores['pos'],
+                        negative_score=scores['neg'],
+                        neutral_score=scores['neu'],
+                        compound_score=scores['compound']
                     )
                     
                     self.db.add(sentiment_result)
@@ -190,17 +189,22 @@ class SentimentService:
         if author:
             query = query.filter(Quote.author.ilike(f"%{author}%"))
         
-        results = query.all()
+        total = query.count()
         
-        if not results:
-            return {"distribution": {}, "total": 0}
+        if total == 0:
+            return {"distribution": {}, "total": 0, "counts": {}}
         
-        sentiment_counts = {"positive": 0, "negative": 0, "neutral": 0}
+        # Count by sentiment using compound_score thresholds
+        positive_count = query.filter(SentimentResult.compound_score >= 0.05).count()
+        negative_count = query.filter(SentimentResult.compound_score <= -0.05).count()
+        neutral_count = total - positive_count - negative_count
         
-        for result in results:
-            sentiment_counts[result.sentiment_label] += 1
+        sentiment_counts = {
+            "positive": positive_count, 
+            "negative": negative_count, 
+            "neutral": neutral_count
+        }
         
-        total = len(results)
         distribution = {
             label: count / total * 100 
             for label, count in sentiment_counts.items()
@@ -215,11 +219,18 @@ class SentimentService:
     async def get_quotes_by_sentiment(self, sentiment_type: str, skip: int = 0, 
                                     limit: int = 50, language: Optional[str] = None):
         """Get quotes filtered by sentiment type"""
-        query = (
-            self.db.query(Quote, SentimentResult)
-            .join(SentimentResult)
-            .filter(SentimentResult.sentiment_label == sentiment_type)
-        )
+        query = self.db.query(Quote, SentimentResult).join(SentimentResult)
+        
+        # Filter by sentiment type using compound_score thresholds
+        if sentiment_type == "positive":
+            query = query.filter(SentimentResult.compound_score >= 0.05)
+        elif sentiment_type == "negative":
+            query = query.filter(SentimentResult.compound_score <= -0.05)
+        else:  # neutral
+            query = query.filter(
+                SentimentResult.compound_score > -0.05,
+                SentimentResult.compound_score < 0.05
+            )
         
         if language:
             query = query.filter(Quote.language == language)
@@ -234,10 +245,10 @@ class SentimentService:
                 "author": quote.author,
                 "language": quote.language,
                 "sentiment_scores": {
-                    "positive": sentiment.positive,
-                    "negative": sentiment.negative,
-                    "neutral": sentiment.neutral,
-                    "compound": sentiment.compound
+                    "positive": sentiment.positive_score,
+                    "negative": sentiment.negative_score,
+                    "neutral": sentiment.neutral_score,
+                    "compound": sentiment.compound_score
                 }
             })
         
