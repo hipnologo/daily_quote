@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, select
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 import uuid
@@ -103,7 +103,7 @@ class SentimentService:
             
             if not force_reanalyze:
                 # Only analyze quotes without sentiment results
-                analyzed_quote_ids = self.db.query(SentimentResult.quote_id).subquery()
+                analyzed_quote_ids = select(SentimentResult.quote_id)
                 query = query.filter(~Quote.id.in_(analyzed_quote_ids))
             
             quotes = query.all()
