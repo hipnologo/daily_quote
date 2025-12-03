@@ -188,3 +188,37 @@ class QuoteService:
         self.db.query(Quote).filter(Quote.id.in_(duplicate_ids)).delete()
         self.db.commit()
         return True
+    
+    async def get_top_authors(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """Get top authors by quote count"""
+        results = self.db.query(
+            Quote.author,
+            func.count(Quote.id).label('count'),
+            func.avg(Quote.sentiment_compound).label('avg_sentiment')
+        ).group_by(Quote.author).order_by(func.count(Quote.id).desc()).limit(limit).all()
+        
+        return [
+            {
+                "author": author,
+                "count": count,
+                "avg_sentiment": round(avg_sentiment, 3) if avg_sentiment else None
+            }
+            for author, count, avg_sentiment in results
+        ]
+    
+    async def get_categories(self) -> List[Dict[str, Any]]:
+        """Get all categories with counts"""
+        results = self.db.query(
+            Quote.category,
+            func.count(Quote.id).label('count'),
+            func.avg(Quote.sentiment_compound).label('avg_sentiment')
+        ).filter(Quote.category.isnot(None)).group_by(Quote.category).order_by(func.count(Quote.id).desc()).all()
+        
+        return [
+            {
+                "category": category,
+                "count": count,
+                "avg_sentiment": round(avg_sentiment, 3) if avg_sentiment else None
+            }
+            for category, count, avg_sentiment in results
+        ]

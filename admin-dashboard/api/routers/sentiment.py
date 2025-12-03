@@ -66,7 +66,12 @@ async def get_job_status(
     if not job_status:
         raise HTTPException(status_code=404, detail="Job not found")
     
-    return job_status
+    return {
+        "job_id": job_id,
+        "status": job_status.get("status", "unknown"),
+        "progress": job_status.get("progress", 0.0),
+        "message": job_status.get("message", "")
+    }
 
 @router.get("/distribution")
 async def get_sentiment_distribution(

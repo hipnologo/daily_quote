@@ -14,8 +14,8 @@ import {
   Line,
   ResponsiveContainer
 } from 'recharts'
-import { TrendingUp, Heart, Play, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
-import { useSentimentStats, useQuoteStats, useStartSentimentAnalysis, useSentimentJobStatus } from '../hooks/useApi'
+import { TrendingUp, Heart, Play, RefreshCw, CheckCircle, AlertCircle, User, Tag } from 'lucide-react'
+import { useSentimentStats, useQuoteStats, useStartSentimentAnalysis, useSentimentJobStatus, useTopAuthors, useCategories } from '../hooks/useApi'
 
 const COLORS = ['#10B981', '#F59E0B', '#EF4444']
 
@@ -26,6 +26,8 @@ export default function Analytics() {
   
   const { data: sentimentStats, isLoading: sentimentLoading, refetch: refetchSentiment } = useSentimentStats()
   const { data: quoteStats, isLoading: quotesLoading } = useQuoteStats()
+  const { data: topAuthorsData, isLoading: authorsLoading } = useTopAuthors(10)
+  const { data: categoriesData, isLoading: categoriesLoading } = useCategories()
   const startAnalysisMutation = useStartSentimentAnalysis()
   const { data: jobStatus } = useSentimentJobStatus(currentJobId || '')
 
@@ -283,25 +285,74 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Top Authors - Placeholder for now */}
+        {/* Top Authors */}
         <div className="card p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Top Authors</h3>
           <div className="space-y-3">
-            <div className="text-center py-8 text-gray-500">
-              <p className="text-sm">Author analytics coming soon</p>
-              <p className="text-xs mt-1">This feature will show sentiment analysis by author</p>
-            </div>
+            {authorsLoading ? (
+              <div className="text-center py-4 text-gray-500">Loading...</div>
+            ) : topAuthorsData?.authors && topAuthorsData.authors.length > 0 ? (
+              topAuthorsData.authors.slice(0, 5).map((author, index) => (
+                <div key={author.author} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-medium">
+                      {index + 1}
+                    </div>
+                    <span className="text-sm font-medium text-gray-900 truncate max-w-32" title={author.author}>
+                      {author.author}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-gray-900">{author.count}</div>
+                    {author.avg_sentiment !== null && (
+                      <div className={`text-xs ${author.avg_sentiment >= 0.05 ? 'text-green-500' : author.avg_sentiment <= -0.05 ? 'text-red-500' : 'text-yellow-500'}`}>
+                        {(author.avg_sentiment * 100).toFixed(0)}%
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <User className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                <p className="text-sm">No author data available</p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Categories - Placeholder for now */}
+        {/* Categories */}
         <div className="card p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Categories</h3>
           <div className="space-y-3">
-            <div className="text-center py-8 text-gray-500">
-              <p className="text-sm">Category analytics coming soon</p>
-              <p className="text-xs mt-1">This feature will show sentiment analysis by category</p>
-            </div>
+            {categoriesLoading ? (
+              <div className="text-center py-4 text-gray-500">Loading...</div>
+            ) : categoriesData?.categories && categoriesData.categories.length > 0 ? (
+              categoriesData.categories.slice(0, 5).map((category) => (
+                <div key={category.category} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Tag className="h-4 w-4 text-gray-400" />
+                    <span className="text-sm font-medium text-gray-900 truncate max-w-32" title={category.category}>
+                      {category.category}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-gray-900">{category.count}</div>
+                    {category.avg_sentiment !== null && (
+                      <div className={`text-xs ${category.avg_sentiment >= 0.05 ? 'text-green-500' : category.avg_sentiment <= -0.05 ? 'text-red-500' : 'text-yellow-500'}`}>
+                        {(category.avg_sentiment * 100).toFixed(0)}%
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Tag className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                <p className="text-sm">No categories assigned yet</p>
+                <p className="text-xs mt-1">Add categories to quotes to see them here</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

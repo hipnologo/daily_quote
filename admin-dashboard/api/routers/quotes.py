@@ -55,6 +55,27 @@ async def get_quote_statistics(
     service = QuoteService(db)
     return await service.get_statistics()
 
+@router.get("/top-authors")
+async def get_top_authors(
+    limit: int = Query(10, ge=1, le=50),
+    db: Session = Depends(get_database),
+    current_user = Depends(get_current_user)
+):
+    """Get top authors by quote count"""
+    service = QuoteService(db)
+    authors = await service.get_top_authors(limit)
+    return {"authors": authors}
+
+@router.get("/categories")
+async def get_categories(
+    db: Session = Depends(get_database),
+    current_user = Depends(get_current_user)
+):
+    """Get all categories with counts"""
+    service = QuoteService(db)
+    categories = await service.get_categories()
+    return {"categories": categories}
+
 @router.get("/", response_model=List[QuoteResponse])
 async def list_quotes(
     skip: int = Query(0, ge=0),

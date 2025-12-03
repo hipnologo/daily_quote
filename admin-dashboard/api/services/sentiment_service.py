@@ -11,8 +11,16 @@ import sys
 # Add backend path for sentiment analysis
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'backend'))
 
-from models.quote import Quote
+from models.quote import Quote, QuoteLanguage
 from models.sentiment import SentimentResult
+
+# Map language strings to QuoteLanguage enum
+LANGUAGE_STRING_MAP = {
+    "en": QuoteLanguage.ENGLISH,
+    "es": QuoteLanguage.SPANISH,
+    "pt": QuoteLanguage.PORTUGUESE,
+    "it": QuoteLanguage.ITALIAN,
+}
 
 class SentimentService:
     # Class-level job tracking (shared across all instances)
@@ -89,7 +97,9 @@ class SentimentService:
             
             # Filter by language if not "all"
             if language != "all":
-                query = query.filter(Quote.language == language)
+                lang_enum = LANGUAGE_STRING_MAP.get(language)
+                if lang_enum:
+                    query = query.filter(Quote.language == lang_enum)
             
             if not force_reanalyze:
                 # Only analyze quotes without sentiment results
@@ -187,7 +197,9 @@ class SentimentService:
         query = self.db.query(SentimentResult).join(Quote)
         
         if language:
-            query = query.filter(Quote.language == language)
+            lang_enum = LANGUAGE_STRING_MAP.get(language)
+            if lang_enum:
+                query = query.filter(Quote.language == lang_enum)
         if author:
             query = query.filter(Quote.author.ilike(f"%{author}%"))
         
@@ -235,7 +247,9 @@ class SentimentService:
             )
         
         if language:
-            query = query.filter(Quote.language == language)
+            lang_enum = LANGUAGE_STRING_MAP.get(language)
+            if lang_enum:
+                query = query.filter(Quote.language == lang_enum)
         
         results = query.offset(skip).limit(limit).all()
         

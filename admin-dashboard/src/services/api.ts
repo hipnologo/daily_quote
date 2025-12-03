@@ -182,6 +182,28 @@ export const quotesApi = {
     })
     return response.data
   },
+
+  getTopAuthors: async (limit: number = 10): Promise<{
+    authors: Array<{
+      author: string
+      count: number
+      avg_sentiment: number | null
+    }>
+  }> => {
+    const response = await api.get('/quotes/top-authors', { params: { limit } })
+    return response.data
+  },
+
+  getCategories: async (): Promise<{
+    categories: Array<{
+      category: string
+      count: number
+      avg_sentiment: number | null
+    }>
+  }> => {
+    const response = await api.get('/quotes/categories')
+    return response.data
+  },
 }
 
 export const filesApi = {

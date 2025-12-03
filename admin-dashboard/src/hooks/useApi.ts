@@ -64,6 +64,20 @@ export const useQuoteStats = () => {
   })
 }
 
+export const useTopAuthors = (limit: number = 10) => {
+  return useQuery({
+    queryKey: ['top-authors', limit],
+    queryFn: () => quotesApi.getTopAuthors(limit),
+  })
+}
+
+export const useCategories = () => {
+  return useQuery({
+    queryKey: ['categories'],
+    queryFn: quotesApi.getCategories,
+  })
+}
+
 export const useCreateQuote = () => {
   const queryClient = useQueryClient()
   
