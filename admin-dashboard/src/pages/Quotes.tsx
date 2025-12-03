@@ -59,7 +59,7 @@ export default function Quotes() {
     setQuoteForm({
       text: quote.text,
       author: quote.author,
-      language: quote.language,
+      language: quote.language as 'en' | 'es' | 'pt' | 'it',
       category: quote.category || ''
     })
     setShowEditModal(true)
@@ -349,6 +349,7 @@ export default function Quotes() {
       />
 
       <DeleteModal
+        isOpen={showDeleteModal}
         quote={selectedQuote!}
         onConfirm={handleConfirmDelete}
         onClose={() => {
@@ -484,13 +485,16 @@ function QuoteModal({ isOpen, isEdit, quote, onChange, onSave, onClose, isLoadin
 
 // Delete Confirmation Modal Component
 interface DeleteModalProps {
+  isOpen: boolean
   quote: Quote
   onConfirm: () => void
   onClose: () => void
   isLoading: boolean
 }
 
-function DeleteModal({ quote, onConfirm, onClose, isLoading }: DeleteModalProps) {
+function DeleteModal({ isOpen, quote, onConfirm, onClose, isLoading }: DeleteModalProps) {
+  if (!isOpen) return null
+
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">

@@ -35,3 +35,4 @@ coverage
 README.md
 .vscode
 .idea
+!pnpm-lock.yaml
