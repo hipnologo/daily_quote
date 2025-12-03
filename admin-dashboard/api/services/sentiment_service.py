@@ -15,9 +15,11 @@ from models.quote import Quote
 from models.sentiment import SentimentResult
 
 class SentimentService:
+    # Class-level job tracking (shared across all instances)
+    jobs: Dict[str, Dict[str, Any]] = {}
+    
     def __init__(self, db: Session):
         self.db = db
-        self.jobs = {}  # In-memory job tracking (use Redis in production)
     
     async def get_statistics(self) -> Dict[str, Any]:
         """Get sentiment analysis statistics"""
@@ -66,7 +68,7 @@ class SentimentService:
         """Start sentiment analysis job"""
         job_id = str(uuid.uuid4())
         
-        self.jobs[job_id] = {
+        SentimentService.jobs[job_id] = {
             "status": "running",
             "progress": 0.0,
             "message": "Starting sentiment analysis...",
@@ -98,7 +100,7 @@ class SentimentService:
             total_quotes = len(quotes)
             
             if total_quotes == 0:
-                self.jobs[job_id] = {
+                SentimentService.jobs[job_id] = {
                     "status": "completed",
                     "progress": 100.0,
                     "message": "No quotes to analyze",
@@ -111,7 +113,7 @@ class SentimentService:
                 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
                 analyzer = SentimentIntensityAnalyzer()
             except ImportError:
-                self.jobs[job_id] = {
+                SentimentService.jobs[job_id] = {
                     "status": "failed",
                     "progress": 0.0,
                     "message": "VADER sentiment analyzer not available",
@@ -146,8 +148,8 @@ class SentimentService:
                     
                     # Update progress
                     progress = (i + 1) / total_quotes * 100
-                    self.jobs[job_id]["progress"] = progress
-                    self.jobs[job_id]["message"] = f"Analyzed {i + 1}/{total_quotes} quotes"
+                    SentimentService.jobs[job_id]["progress"] = progress
+                    SentimentService.jobs[job_id]["message"] = f"Analyzed {i + 1}/{total_quotes} quotes"
                     
                     # Commit every 10 quotes
                     if (i + 1) % 10 == 0:
@@ -160,7 +162,7 @@ class SentimentService:
             # Final commit
             self.db.commit()
             
-            self.jobs[job_id] = {
+            SentimentService.jobs[job_id] = {
                 "status": "completed",
                 "progress": 100.0,
                 "message": f"Successfully analyzed {total_quotes} quotes",
@@ -168,7 +170,7 @@ class SentimentService:
             }
             
         except Exception as e:
-            self.jobs[job_id] = {
+            SentimentService.jobs[job_id] = {
                 "status": "failed",
                 "progress": 0.0,
                 "message": f"Analysis failed: {str(e)}",
@@ -177,7 +179,7 @@ class SentimentService:
     
     async def get_job_status(self, job_id: str) -> Optional[Dict[str, Any]]:
         """Get job status"""
-        return self.jobs.get(job_id)
+        return SentimentService.jobs.get(job_id)
     
     async def get_distribution(self, language: Optional[str] = None, 
                              author: Optional[str] = None) -> Dict[str, Any]:
