@@ -1,0 +1,48 @@
+# Combined Frontend Dockerfile
+# Builds both public website and admin dashboard into single nginx container
+
+# Build stage for Admin Dashboard
+FROM node:18-alpine AS admin-build
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy admin dashboard package files
+COPY admin-dashboard/package.json admin-dashboard/pnpm-lock.yaml ./
+
+# Install dependencies (use --no-frozen-lockfile in case of issues)
+RUN pnpm install
+
+# Copy admin dashboard source code
+COPY admin-dashboard/ .
+
+# Build the admin dashboard (outputs to /app/dist with /admin base path)
+RUN pnpm run build
+
+# Production stage - nginx serving both sites
+FROM nginx:alpine
+
+# Create directories for both sites
+RUN mkdir -p /usr/share/nginx/html/public /usr/share/nginx/html/admin
+
+# Copy admin dashboard build to /admin
+COPY --from=admin-build /app/dist /usr/share/nginx/html/admin
+
+# Copy public website files
+COPY index.html /usr/share/nginx/html/public/
+COPY public/ /usr/share/nginx/html/public/public/
+COPY images/ /usr/share/nginx/html/public/images/
+
+# Copy nginx configuration
+COPY admin-dashboard/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

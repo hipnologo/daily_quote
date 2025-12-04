@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: daily_quote-api:latest
+          image: daily-quote-api:latest
           imagePullPolicy: IfNotPresent  # Use IfNotPresent for Docker Desktop compatibility
           ports:
             - containerPort: 8000

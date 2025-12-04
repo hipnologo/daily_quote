@@ -160,12 +160,25 @@ REM Build Docker images if requested
 if "%BUILD_IMAGES%"=="true" (
     echo [INFO] Building Docker images...
     pushd "%PROJECT_ROOT%"
-    docker-compose -f docker-compose.v2.yml build
+    
+    REM Build API image
+    echo [INFO] Building API image...
+    docker build -t daily-quote-api:latest -f admin-dashboard/api/Dockerfile admin-dashboard/api
     if %ERRORLEVEL% neq 0 (
-        echo [ERROR] Failed to build Docker images
+        echo [ERROR] Failed to build API image
         popd
         exit /b 1
     )
+    
+    REM Build combined frontend image (public + admin dashboard)
+    echo [INFO] Building combined frontend image...
+    docker build -t daily-quote-frontend:latest -f Dockerfile.frontend .
+    if %ERRORLEVEL% neq 0 (
+        echo [ERROR] Failed to build frontend image
+        popd
+        exit /b 1
+    )
+    
     popd
     echo [INFO] Docker images built successfully!
 )
@@ -173,8 +186,8 @@ if "%BUILD_IMAGES%"=="true" (
 REM Load images into cluster (only for kind CLI-managed clusters)
 if "%USE_KIND_CLI%"=="true" (
     echo [INFO] Loading images into kind cluster '%CLUSTER_NAME%'...
-    kind load docker-image daily_quote-api:latest --name %CLUSTER_NAME%
-    kind load docker-image daily_quote-frontend:latest --name %CLUSTER_NAME%
+    kind load docker-image daily-quote-api:latest --name %CLUSTER_NAME%
+    kind load docker-image daily-quote-frontend:latest --name %CLUSTER_NAME%
     echo [INFO] Images loaded successfully!
 ) else (
     echo [INFO] Using Docker Desktop cluster - images are automatically available
@@ -242,13 +255,11 @@ echo.
 echo   127.0.0.1 daily-quote.local
 echo.
 echo Access the application at:
-echo   http://daily-quote.local
-echo   or http://localhost (if using port-forward)
+echo   Public Website:    http://daily-quote.local/
+echo   Admin Dashboard:   http://daily-quote.local/admin
+echo   API Documentation: http://daily-quote.local/api/docs
 echo.
-echo API Documentation:
-echo   http://daily-quote.local/api/docs
-echo.
-echo Default credentials:
+echo Default admin credentials:
 echo   Username: admin
 echo   Password: admin123
 echo.
@@ -257,7 +268,7 @@ echo   kubectl get pods -n daily-quote
 echo   kubectl get svc -n daily-quote
 echo   kubectl logs -n daily-quote -l component=api
 echo   kubectl logs -n daily-quote -l component=frontend
-echo   kubectl port-forward -n daily-quote svc/daily-quote-api 8000:80
+echo   kubectl port-forward -n daily-quote svc/daily-quote-frontend 80:80
 echo ==============================================
 
 endlocal

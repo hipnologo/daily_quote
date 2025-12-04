@@ -5,6 +5,7 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/admin/',  // Serve admin dashboard under /admin path
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

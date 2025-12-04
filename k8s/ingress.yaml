@@ -6,23 +6,20 @@ metadata:
   labels:
     app: daily-quote
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
 spec:
   ingressClassName: nginx
   rules:
     - host: daily-quote.local
       http:
         paths:
-          # API routes - proxy to API service
-          - path: /api(/|$)(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: daily-quote-api
-                port:
-                  number: 8000
-          # Frontend routes - serve from frontend service
+          # All routes go to frontend - nginx inside handles routing
+          # - / serves public website
+          # - /admin serves admin dashboard
+          # - /api proxies to API service (handled by frontend nginx)
           - path: /
             pathType: Prefix
             backend:

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom'
 import { 
   LayoutDashboard, 
   Quote, 
@@ -20,14 +20,16 @@ const navigation = [
   { name: 'System', href: '/system', icon: Settings },
 ]
 
-interface LayoutProps {
-  children: React.ReactNode
-}
-
-export default function Layout({ children }: LayoutProps) {
+export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
   const { user, logout } = useAuth()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/logout')
+  }
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">
@@ -84,8 +86,9 @@ export default function Layout({ children }: LayoutProps) {
                   Welcome, {user?.username}
                 </span>
                 <button
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  title="Logout"
                 >
                   <LogOut className="h-5 w-5" />
                 </button>
@@ -98,7 +101,7 @@ export default function Layout({ children }: LayoutProps) {
         <main className="flex-1 relative overflow-y-auto focus:outline-none">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              {children}
+              <Outlet />
             </div>
           </div>
         </main>
