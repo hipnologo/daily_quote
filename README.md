@@ -281,8 +281,10 @@ In Docker Desktop settings:
 # From the project root
 cd k8s
 
-# Deploy with automatic image building
-# The script will use existing Docker Desktop cluster if available, otherwise create a new kind cluster
+# Option 1: Use Docker Desktop's built-in Kubernetes (recommended)
+.\deploy.bat --build --use-desktop
+
+# Option 2: Create a new kind cluster (requires kind CLI)
 .\deploy.bat --build
 ```
 
@@ -292,9 +294,47 @@ cd k8s
 # From the project root
 cd k8s
 
-# Deploy with automatic image building
-# The script will use existing Docker Desktop cluster if available, otherwise create a new kind cluster
+# Option 1: Use Docker Desktop's built-in Kubernetes (recommended)
+./deploy.sh --build --use-desktop
+
+# Option 2: Create a new kind cluster (requires kind CLI)
 ./deploy.sh --build
+```
+
+##### Kubernetes Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Kubernetes Cluster                              │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │                 NGINX Ingress Controller                        │ │
+│  │                 daily-quote.local (80/443)                      │ │
+│  └──────────────────────────┬─────────────────────────────────────┘ │
+│                             │                                        │
+│  ┌──────────────────────────┼────────────────────────────────────┐  │
+│  │               daily-quote namespace                            │  │
+│  │                          │                                     │  │
+│  │      ┌───────────────────┴───────────────────┐                │  │
+│  │      ▼                                       ▼                │  │
+│  │  ┌──────────────┐                    ┌──────────────┐         │  │
+│  │  │   Frontend   │                    │     API      │         │  │
+│  │  │   Service    │                    │   Service    │         │  │
+│  │  └──────┬───────┘                    └──────┬───────┘         │  │
+│  │         ▼                                   ▼                 │  │
+│  │  ┌──────────────┐                    ┌──────────────┐         │  │
+│  │  │   Frontend   │                    │     API      │         │  │
+│  │  │  Deployment  │                    │  Deployment  │         │  │
+│  │  │ (nginx+React)│                    │  (FastAPI)   │         │  │
+│  │  └──────────────┘                    └──────┬───────┘         │  │
+│  │                                             │                 │  │
+│  │                                    ┌────────┴────────┐        │  │
+│  │                                    │ Persistent Vols │        │  │
+│  │                                    │  (SQLite, etc)  │        │  │
+│  │                                    └─────────────────┘        │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                                                                      │
+│  Nodes: Control Plane + Worker(s)                                    │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ##### Manual Kubernetes Deployment

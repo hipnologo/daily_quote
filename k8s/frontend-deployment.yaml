@@ -21,7 +21,7 @@ spec:
       containers:
         - name: frontend
           image: daily_quote-frontend:latest
-          imagePullPolicy: Never  # Use local images for kind
+          imagePullPolicy: IfNotPresent  # Use IfNotPresent for Docker Desktop compatibility
           ports:
             - containerPort: 80
               name: http
