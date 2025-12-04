@@ -53,10 +53,11 @@ if %ERRORLEVEL% neq 0 (
 
 echo [INFO] All prerequisites met!
 
-REM Check if cluster exists
+REM Setup kind cluster (create if needed or use existing)
+REM Check if our specific cluster exists
 kind get clusters 2>nul | findstr /C:"%CLUSTER_NAME%" >nul
 if %ERRORLEVEL% equ 0 (
-    echo [INFO] Cluster '%CLUSTER_NAME%' already exists
+    echo [INFO] Using existing kind cluster '%CLUSTER_NAME%'
     if "%CLEAN_DEPLOY%"=="true" (
         echo [WARN] Deleting existing cluster for clean deploy...
         kind delete cluster --name %CLUSTER_NAME%
@@ -64,10 +65,19 @@ if %ERRORLEVEL% equ 0 (
         kind create cluster --config "%SCRIPT_DIR%kind-config.yaml"
     )
 ) else (
-    echo [INFO] Creating kind cluster '%CLUSTER_NAME%'...
+    REM Check if any kind clusters exist
+    for /f %%i in ('kind get clusters 2^>nul') do (
+        echo [WARN] Found existing kind cluster: %%i
+        echo [WARN] Using existing cluster '%%i'. To use a specific cluster, delete others or specify cluster name.
+        set "CLUSTER_NAME=%%i"
+        goto :use_existing
+    )
+    
+    echo [INFO] No existing kind clusters found. Creating new cluster '%CLUSTER_NAME%'...
     kind create cluster --config "%SCRIPT_DIR%kind-config.yaml"
 )
 
+:use_existing
 REM Set kubectl context
 kubectl cluster-info --context kind-%CLUSTER_NAME%
 

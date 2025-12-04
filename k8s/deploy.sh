@@ -62,10 +62,11 @@ check_prerequisites() {
     log_info "All prerequisites met!"
 }
 
-# Create kind cluster
-create_cluster() {
-    if kind get clusters 2>/dev/null | grep -q "$CLUSTER_NAME"; then
-        log_info "Cluster '$CLUSTER_NAME' already exists"
+# Setup kind cluster (create if needed or use existing)
+setup_cluster() {
+    # Check if our specific cluster exists
+    if kind get clusters 2>/dev/null | grep -q "^$CLUSTER_NAME$"; then
+        log_info "Using existing kind cluster '$CLUSTER_NAME'"
         
         if [ "$CLEAN_DEPLOY" = true ]; then
             log_warn "Deleting existing cluster for clean deploy..."
@@ -74,8 +75,19 @@ create_cluster() {
             kind create cluster --config "$SCRIPT_DIR/kind-config.yaml"
         fi
     else
-        log_info "Creating kind cluster '$CLUSTER_NAME'..."
-        kind create cluster --config "$SCRIPT_DIR/kind-config.yaml"
+        # Check if any kind clusters exist
+        existing_clusters=$(kind get clusters 2>/dev/null)
+        if [ -n "$existing_clusters" ]; then
+            log_warn "Found existing kind clusters: $existing_clusters"
+            log_warn "Using first available cluster. To use a specific cluster, delete others or specify cluster name."
+            
+            # Use the first available cluster
+            CLUSTER_NAME=$(echo "$existing_clusters" | head -n1)
+            log_info "Using existing cluster: $CLUSTER_NAME"
+        else
+            log_info "No existing kind clusters found. Creating new cluster '$CLUSTER_NAME'..."
+            kind create cluster --config "$SCRIPT_DIR/kind-config.yaml"
+        fi
     fi
     
     # Set kubectl context

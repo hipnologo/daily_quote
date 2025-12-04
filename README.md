@@ -282,6 +282,7 @@ In Docker Desktop settings:
 cd k8s
 
 # Deploy with automatic image building
+# The script will use existing Docker Desktop cluster if available, otherwise create a new kind cluster
 .\deploy.bat --build
 ```
 
@@ -292,6 +293,7 @@ cd k8s
 cd k8s
 
 # Deploy with automatic image building
+# The script will use existing Docker Desktop cluster if available, otherwise create a new kind cluster
 ./deploy.sh --build
 ```
 
