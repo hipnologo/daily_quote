@@ -163,7 +163,7 @@ if "%BUILD_IMAGES%"=="true" (
     
     REM Build API image
     echo [INFO] Building API image...
-    docker build -t daily-quote-api:latest -f admin-dashboard/api/Dockerfile admin-dashboard/api
+    docker build -t daily-quote-api:latest -f backend/api/Dockerfile backend/api
     if %ERRORLEVEL% neq 0 (
         echo [ERROR] Failed to build API image
         popd
@@ -198,19 +198,21 @@ echo [INFO] Checking NGINX Ingress Controller...
 kubectl get namespace ingress-nginx >nul 2>nul
 if %ERRORLEVEL% equ 0 (
     echo [INFO] NGINX Ingress Controller already installed
-) else (
-    echo [INFO] Installing NGINX Ingress Controller...
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
-
-    echo [INFO] Waiting for ingress controller to be ready (this may take a few minutes)...
-    kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=300s
-    if %ERRORLEVEL% neq 0 (
-        echo [WARN] Ingress controller not ready yet, continuing anyway...
-    ) else (
-        echo [INFO] Ingress controller installed!
-    )
+    goto :deploy_app
 )
 
+echo [INFO] Installing NGINX Ingress Controller...
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+
+echo [INFO] Waiting for ingress controller to be ready (this may take a few minutes)...
+kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=300s
+if %ERRORLEVEL% neq 0 (
+    echo [WARN] Ingress controller not ready yet, continuing anyway...
+) else (
+    echo [INFO] Ingress controller installed!
+)
+
+:deploy_app
 REM Deploy application
 echo [INFO] Deploying Daily Quote application...
 

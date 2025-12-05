@@ -6,7 +6,7 @@ services:
   # ============================================
   api:
     build:
-      context: ./admin-dashboard/api
+      context: ./backend/api
       dockerfile: Dockerfile
     container_name: daily-quote-api
     ports:
