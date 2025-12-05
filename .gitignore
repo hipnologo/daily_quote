@@ -73,6 +73,9 @@ instance/
 docs/_build/
 doc/_build/
 
+# Security assessment reports
+docs/security-assessment.md
+
 # PyBuilder
 target/
 
