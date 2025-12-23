@@ -2160,3 +2160,4 @@ Aqui está a minha receita para curar todas as feridas. Assista ao filme 'Funny 
 Pensamos na arquitetura corporativa como o processo que usamos para descrever e mapear completamente a funcionalidade e os requisitos de negócios e relacioná-los aos requisitos de sistemas de informação. — Tony Scott
 As dificuldades que encontrei no passado me ajudarão a ter sucesso no futuro. — Philip Emeagwali
 Devemos garantir que todos os trabalhadores tenham cuidados de saúde e sejam capazes de poupar para a sua reforma. Devemos garantir que nossos trabalhadores tenham condições de trabalho seguras e saudáveis. — Leonard Boswell
+Em caso de dúvida, murmure quando estiver em apuros, delegue quando estiver no comando, pondere. — James H. Boren
